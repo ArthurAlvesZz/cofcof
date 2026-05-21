@@ -103,141 +103,140 @@ export default function Home() {
   const finalCtaBlock = getBlock('home.finalCta');
 
   return (
-    <div className="w-full pt-6 md:pt-8">
+    <div className="w-full">
       {/* 1. HERO - Cinematic & Premium */}
-      <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 relative overflow-hidden rounded-[2rem] md:rounded-[3rem] border border-[#a3a3a3]/10 mt-12 md:mt-24 mb-12 shadow-2xl bg-[#111111] w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)]">
+      <div className="w-full relative overflow-hidden bg-[#111111] pt-28 md:pt-36 pb-20 md:pb-28 border-b border-[#a3a3a3]/10 shadow-2xl">
         {/* Hero Background Image overlay */}
-        <div className="absolute inset-0 z-0 bg-[image:linear-gradient(to_bottom,rgba(10,10,10,0.9),rgba(10,10,10,0.4)),url('https://lh3.googleusercontent.com/aida-public/AB6AXuBw3hyn7icMTm2DG1DORz-6_pj34D9njJ497ojAHcLknfi71Ksz8kZA2wuQOA6Ryghm14jIX48Y4AAYa8O08yDT-HYCEF0_n6tRXj7x_sVgqhopl_6X1dR1c0lR98-zStNQhNLT-hkksF5YWlAQG_MdBK8D8Vb8whcKrUn0uIbIn2POypGgb_ZJOXHQ7V98ulnSHJlse_8cVyBIh5Ksxir9q3TkRPEmyAntU9Q9akBrJNkoO353SeQp1GbqPHs9yuh5EliG_y0Dwbt_')] bg-cover bg-center rounded-[2rem] md:rounded-[3rem] opacity-70 mix-blend-overlay pointer-events-none"></div>
+        <div className="absolute inset-0 z-0 bg-[image:linear-gradient(to_bottom,rgba(10,10,10,0.9),rgba(10,10,10,0.4)),url('https://lh3.googleusercontent.com/aida-public/AB6AXuBw3hyn7icMTm2DG1DORz-6_pj34D9njJ497ojAHcLknfi71Ksz8kZA2wuQOA6Ryghm14jIX48Y4AAYa8O08yDT-HYCEF0_n6tRXj7x_sVgqhopl_6X1dR1c0lR98-zStNQhNLT-hkksF5YWlAQG_MdBK8D8Vb8whcKrUn0uIbIn2POypGgb_ZJOXHQ7V98ulnSHJlse_8cVyBIh5Ksxir9q3TkRPEmyAntU9Q9akBrJNkoO353SeQp1GbqPHs9yuh5EliG_y0Dwbt_')] bg-cover bg-center opacity-70 mix-blend-overlay pointer-events-none"></div>
         
         {/* Floating Beans (Decorative) */}
-        <div className="absolute w-10 h-10 rounded-full opacity-80 shadow-[0_10px_25px_rgba(0,0,0,0.5)] bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOZQmzov6DH0_KI8o1h-KnRa36TN6v9yZUXtua5K80tGQV-qXpilTsY7M8J8fA6MkeolQVnYLxkANDZpAn8NzF-xFNo24KIRNbrwg2-u4Pxa0STWiHRPRunwXqFz6IcSOvfPLRYKtV_DF8w2qZVM2cijse2SEhGPcGDd8_AjFNiSoy_2BHYIvSA3LgudBTFOsouSaDZ1eMP-1RalsuA3HWvX1D6b8PwNxYt0tN3g1L85BEnqIKcnqahRrdPI8HuHnaW_-gBVqqwRn0')] bg-cover top-1/4 right-1/4 transform rotate-12 z-0 hidden md:block"></div>
-        <div className="absolute w-10 h-10 rounded-full opacity-80 shadow-[0_10px_25px_rgba(0,0,0,0.5)] bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOZQmzov6DH0_KI8o1h-KnRa36TN6v9yZUXtua5K80tGQV-qXpilTsY7M8J8fA6MkeolQVnYLxkANDZpAn8NzF-xFNo24KIRNbrwg2-u4Pxa0STWiHRPRunwXqFz6IcSOvfPLRYKtV_DF8w2qZVM2cijse2SEhGPcGDd8_AjFNiSoy_2BHYIvSA3LgudBTFOsouSaDZ1eMP-1RalsuA3HWvX1D6b8PwNxYt0tN3g1L85BEnqIKcnqahRrdPI8HuHnaW_-gBVqqwRn0')] bg-cover top-1/3 left-1/4 transform -rotate-12 scale-75 z-0 hidden md:block"></div>
-        <div className="absolute w-10 h-10 rounded-full opacity-80 shadow-[0_10px_25px_rgba(0,0,0,0.5)] bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOZQmzov6DH0_KI8o1h-KnRa36TN6v9yZUXtua5K80tGQV-qXpilTsY7M8J8fA6MkeolQVnYLxkANDZpAn8NzF-xFNo24KIRNbrwg2-u4Pxa0STWiHRPRunwXqFz6IcSOvfPLRYKtV_DF8w2qZVM2cijse2SEhGPcGDd8_AjFNiSoy_2BHYIvSA3LgudBTFOsouSaDZ1eMP-1RalsuA3HWvX1D6b8PwNxYt0tN3g1L85BEnqIKcnqahRrdPI8HuHnaW_-gBVqqwRn0')] bg-cover bottom-1/3 right-1/3 transform rotate-45 scale-125 z-0 hidden md:block"></div>
+        <div className="absolute w-10 h-10 rounded-full opacity-80 shadow-[0_10px_25px_rgba(0,0,0,0.5)] bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOZQmzov6DH0_KI8o1h-KnRa36TN6v9yZUXtua5K80tGQV-qXpilTsY7M8J8fA6MkeolQVnYLxkANDZpAn8NzF-xFNo24KIRNbrwg2-u4Pxa0STWiHRPRunwXqFz6IcSOvfPLRYKtV_DF8w2qZVM2cijse2SEhGPcGDd8_AjFNiSoy_2BHYIvSA3LgudBTFOsouSaDZ1eMP-1RalsuA3HWvX1D6b8PwNxYt0tN3g1L85BEnqIKcnqahRrdPI8HuHnaW_-gBVqqwRn0')] bg-cover top-1/4 right-1/4 transform rotate-12 z-0 hidden xl:block"></div>
+        <div className="absolute w-10 h-10 rounded-full opacity-80 shadow-[0_10px_25px_rgba(0,0,0,0.5)] bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOZQmzov6DH0_KI8o1h-KnRa36TN6v9yZUXtua5K80tGQV-qXpilTsY7M8J8fA6MkeolQVnYLxkANDZpAn8NzF-xFNo24KIRNbrwg2-u4Pxa0STWiHRPRunwXqFz6IcSOvfPLRYKtV_DF8w2qZVM2cijse2SEhGPcGDd8_AjFNiSoy_2BHYIvSA3LgudBTFOsouSaDZ1eMP-1RalsuA3HWvX1D6b8PwNxYt0tN3g1L85BEnqIKcnqahRrdPI8HuHnaW_-gBVqqwRn0')] bg-cover top-1/3 left-1/4 transform -rotate-12 scale-75 z-0 hidden xl:block"></div>
+        <div className="absolute w-10 h-10 rounded-full opacity-80 shadow-[0_10px_25px_rgba(0,0,0,0.5)] bg-[url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOZQmzov6DH0_KI8o1h-KnRa36TN6v9yZUXtua5K80tGQV-qXpilTsY7M8J8fA6MkeolQVnYLxkANDZpAn8NzF-xFNo24KIRNbrwg2-u4Pxa0STWiHRPRunwXqFz6IcSOvfPLRYKtV_DF8w2qZVM2cijse2SEhGPcGDd8_AjFNiSoy_2BHYIvSA3LgudBTFOsouSaDZ1eMP-1RalsuA3HWvX1D6b8PwNxYt0tN3g1L85BEnqIKcnqahRrdPI8HuHnaW_-gBVqqwRn0')] bg-cover bottom-1/3 right-1/3 transform rotate-45 scale-125 z-0 hidden xl:block"></div>
 
-        {/* Microcopy Top */}
-        <div className="relative z-10 flex justify-center w-full mt-4 md:mt-8 mb-4">
-          <div className="inline-flex items-center gap-2 border border-[#c9a263]/30 text-[#c9a263] rounded-full px-4 py-1.5 text-[10px] font-black tracking-widest uppercase bg-[#c9a263]/10 backdrop-blur-md">
-            Lote selecionado da vez
-          </div>
-        </div>
+        <div className="max-w-[95rem] mx-auto px-4 sm:px-6 lg:px-10 relative z-10 flex flex-col xl:flex-row items-center gap-12 xl:gap-8">
+          
+          {/* Coluna Esquerda: Textos e CTAs */}
+          <div className="w-full xl:w-1/2 flex flex-col justify-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 border border-[#c9a263]/30 text-[#c9a263] rounded-full px-4 py-1.5 text-[10px] font-black tracking-widest uppercase bg-[#c9a263]/10 backdrop-blur-md mb-6">
+                Lote selecionado da vez
+              </div>
 
-        {/* Microcopy acima da barra técnica */}
-        <div className="relative z-10 text-center mb-4">
-          <p className="text-[#F6F1EB] text-xs uppercase tracking-widest font-bold">Rastreabilidade real, antes da primeira xícara.</p>
-        </div>
+              <h1 className="text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-serif text-[#c9a263] leading-[1.05] mb-6">
+                {heroBlock?.title || "CAFÉS ESPECIAIS PREMIADOS DO BRASIL, TORRADOS SOB DEMANDA."}
+              </h1>
+              <p className="text-xl md:text-2xl text-[#a3a3a3] max-w-2xl leading-relaxed mb-8 font-light">
+                {heroBlock?.subtitle || "Talvez o melhor café do Brasil ainda não esteja na sua xícara."}
+              </p>
 
-        {/* Top Stats Bar */}
-        <div className="relative z-10 bg-[#1a1a1a]/80 backdrop-blur-md border border-[#a3a3a3]/10 rounded-xl p-6 mb-4 mx-auto max-w-5xl flex flex-wrap justify-between items-center text-sm shadow-xl">
-          <div className="px-4 text-center sm:text-left mb-4 sm:mb-0 border-r border-[#a3a3a3]/10 last:border-0 flex-1 hidden sm:block group relative">
-            <span className="block text-[#c9a263] mb-1 uppercase text-[10px] tracking-wider font-bold">Edição</span>
-            <span className="block text-white font-medium">Nº 01 • 2026</span>
-          </div>
-          <div className="px-4 text-center sm:text-left mb-4 sm:mb-0 sm:border-r border-[#a3a3a3]/10 last:border-0 flex-1">
-            <span className="block text-[#c9a263] mb-1 uppercase text-[10px] tracking-wider font-bold">Origem</span>
-            <span className="block text-white font-medium">Cerrado Mineiro</span>
-          </div>
-          <div className="px-4 text-center sm:text-left mb-4 sm:mb-0 sm:border-r border-[#a3a3a3]/10 last:border-0 flex-1 hidden md:block">
-            <span className="block text-[#c9a263] mb-1 uppercase text-[10px] tracking-wider font-bold">Altitude</span>
-            <span className="block text-white font-medium">1100 – 1250m</span>
-          </div>
-          <div className="px-4 text-center sm:text-left mb-4 sm:mb-0 sm:border-r border-[#a3a3a3]/10 last:border-0 flex-1 hidden md:block">
-            <span className="block text-[#c9a263] mb-1 uppercase text-[10px] tracking-wider font-bold">Safra</span>
-            <span className="block text-white font-medium">Fresco / Arábica</span>
-          </div>
-          <div className="px-4 text-center sm:text-left mb-4 sm:mb-0 flex-1">
-            <span className="block text-[#c9a263] mb-1 uppercase text-[10px] tracking-wider font-bold">Pontuação SCA</span>
-            <span className="block text-white font-medium text-lg">86 – 88.5</span>
-          </div>
-        </div>
-        
-        <div className="relative z-10 text-center mb-12">
-            <p className="text-[#a3a3a3] text-xs font-light tracking-wide italic">Cada lote informa origem, safra, altitude e pontuação antes de chegar à sua casa.</p>
-        </div>
+              {/* Barra Técnica Condensada */}
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-4 mb-10 py-4 border-y border-[#a3a3a3]/10 text-sm">
+                <div>
+                  <span className="block text-[#c9a263] mb-1 uppercase text-[10px] tracking-wider font-bold">Origem</span>
+                  <span className="block text-white font-medium">Cerrado</span>
+                </div>
+                <div>
+                  <span className="block text-[#c9a263] mb-1 uppercase text-[10px] tracking-wider font-bold">Safra</span>
+                  <span className="block text-white font-medium">Fresco</span>
+                </div>
+                <div>
+                  <span className="block text-[#c9a263] mb-1 uppercase text-[10px] tracking-wider font-bold">Pontuação SCA</span>
+                  <span className="block text-white font-medium">86 – 88.5</span>
+                </div>
+              </div>
 
-        {/* Hero Content */}
-        <div className="relative z-10 max-w-4xl mb-16 md:mb-24 px-4 sm:px-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <h1 className="text-5xl md:text-6xl lg:text-[5rem] font-serif text-[#c9a263] leading-[1.05] mb-6">
-              {heroBlock?.title || "CAFÉS ESPECIAIS PREMIADOS DO BRASIL, TORRADOS SOB DEMANDA."}
-            </h1>
-            <p className="text-xl md:text-2xl text-[#a3a3a3] max-w-2xl leading-relaxed mb-10 font-light">
-              {heroBlock?.subtitle || "Talvez o melhor café do Brasil ainda não esteja na sua xícara."}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <button onClick={() => navigate(heroBlock?.ctas?.[0]?.url || '/cafes')} className="bg-[#c9a263] text-[#0a0a0a] px-10 py-5 rounded-xl font-bold text-center hover:bg-[#e0b875] transition-colors shadow-[0_10px_30px_rgba(201,162,99,0.3)] hover:scale-105 active:scale-95 uppercase text-sm">
-                {heroBlock?.ctas?.[0]?.label || "Comprar cafés premiados"}
-              </button>
-              <Link to={heroBlock?.ctas?.[1]?.url || "/assinatura"} className="border border-[#c9a263]/30 text-white px-10 py-5 rounded-xl font-bold text-center hover:bg-white/5 hover:border-[#c9a263]/50 transition-colors backdrop-blur-sm uppercase text-sm">
-                {heroBlock?.ctas?.[1]?.label || "Entrar para o Clube"}
-              </Link>
-            </div>
-            
-            {/* Microprovas */}
-            <div className="flex flex-col gap-4 items-start">
-              <span className="text-white text-xs uppercase tracking-widest font-bold">Torra sob demanda · Envio fresco · Origem rastreada</span>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-[10px] sm:text-xs font-bold text-[#a3a3a3] uppercase tracking-widest">
-                <span className="flex items-center gap-2"><Award size={14} className="text-[#c9a263]"/> 86–88.5 SCA</span>
-                <span className="flex items-center gap-2"><Star size={14} className="text-[#c9a263]"/> Cup of Excellence</span>
-                <span className="flex items-center gap-2"><MapPin size={14} className="text-[#c9a263]"/> Cerrado Mineiro D.O.</span>
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <button onClick={() => navigate(heroBlock?.ctas?.[0]?.url || '/cafes')} className="whitespace-nowrap bg-[#c9a263] text-[#0a0a0a] px-8 py-5 rounded-xl font-bold text-center hover:bg-[#e0b875] transition-colors shadow-[0_10px_30px_rgba(201,162,99,0.3)] hover:scale-105 active:scale-95 uppercase text-sm">
+                  {heroBlock?.ctas?.[0]?.label || "Comprar cafés premiados"}
+                </button>
+                <Link to={heroBlock?.ctas?.[1]?.url || "/assinatura"} className="whitespace-nowrap border border-[#c9a263]/30 text-white px-8 py-5 rounded-xl font-bold text-center hover:bg-white/5 hover:border-[#c9a263]/50 transition-colors backdrop-blur-sm uppercase text-sm">
+                  {heroBlock?.ctas?.[1]?.label || "Entrar para o Clube"}
+                </Link>
+              </div>
+              
+              {/* Microprovas */}
+              <div className="flex flex-col gap-4 items-start">
+                <span className="text-white text-xs uppercase tracking-widest font-bold">Torra sob demanda · Envio fresco · Origem rastreada</span>
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-[10px] sm:text-xs font-bold text-[#a3a3a3] uppercase tracking-widest">
+                  <span className="flex items-center gap-2"><Award size={14} className="text-[#c9a263]"/> 86–88.5 SCA</span>
+                  <span className="flex items-center gap-2"><Star size={14} className="text-[#c9a263]"/> Cup of Excellence</span>
+                  <span className="flex items-center gap-2"><MapPin size={14} className="text-[#c9a263]"/> Cerrado Mineiro D.O.</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Coluna Direita: Video Bento */}
+          <div className="w-full xl:w-1/2 flex flex-col justify-center">
+            <h3 className="hidden xl:block text-white text-lg font-serif mb-6 opacity-80">
+              Antes de escolher, entenda a diferença:
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5">
+              {/* Card 1 */}
+              <div title="Por que é especial?" className="group overflow-hidden rounded-2xl relative aspect-[4/5] bg-[#0a0a0a] border border-[#a3a3a3]/10 shadow-lg cursor-pointer flex flex-col justify-between">
+                <img alt="Qualidade" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLQUsxk_5LqhPjy4zmw2AAhVDerTR_qrH-EYZjSkk90w0vRc1HgqQ12cOvzFRtQ5Yi1MQTUhcUxfl6rFlqNqrtkYAoazavoytXeCfvVGJRokQgj-o0u3m_pYkM1B4lThLC9FDNmesfwRb8isK6mdxxZ9Py3muGc_Uvw8pSEBbK-_n3J9t3_H2BnY7awmv9Y3In9fw5xxytWkd3zRFOdKao9zJc3dNAoEu4B50LVEjG9X8Mxa3YLLwkxeiUWVwEQWL7gv_FwBks305E" className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500 mix-blend-lighten" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none"></div>
+                
+                <div className="relative z-10 p-4">
+                  <span className="inline-block bg-[#111111]/80 backdrop-blur-md border border-[#a3a3a3]/20 text-[#a3a3a3] text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
+                    Qualidade
+                  </span>
+                </div>
+
+                <div className="absolute bottom-0 left-0 w-full p-5 z-10 flex flex-col justify-end">
+                  <h3 className="text-white font-serif text-lg leading-tight mb-2">Por que é<br/>especial?</h3>
+                  <Link to="/sobre" className="inline-flex items-center text-[#c9a263] text-[11px] font-bold uppercase tracking-widest hover:text-white transition-colors">
+                    Ver vídeo <ArrowRight size={14} className="ml-1.5" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Card 2 */}
+              <div title="Por que custa mais?" className="group overflow-hidden rounded-2xl relative aspect-[4/5] bg-[#0a0a0a] border border-[#a3a3a3]/10 shadow-lg cursor-pointer flex flex-col justify-between">
+                <img alt="Valor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2KqCkpw1B4GssO3fg-tekCqKBRe_oolOZjQBrTVT7cgxWnGE0JetEKl2vlYaPvrzrcp0HuSSDGWnuSiMe_LilwYCn6OkF8h1nFNqo4sSPUhYA39M1-tFexPVEnMlqKbanksE6IL44TY5n0BC3qM_-fIqjBZbR2N-M2FMA4kgtyJc-OFrpesytK2B7Hrp2PrdiJHYO9vzO0qv42QN7KruySAo6ZJCRqz8nWo93CapVFyffHm_djirReatFNFYUYQzNLOMpfoA0Ygii" className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500 mix-blend-lighten" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none"></div>
+                
+                <div className="relative z-10 p-4">
+                  <span className="inline-block bg-[#111111]/80 backdrop-blur-md border border-[#a3a3a3]/20 text-[#a3a3a3] text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
+                    Valor
+                  </span>
+                </div>
+
+                <div className="absolute bottom-0 left-0 w-full p-5 z-10 flex flex-col justify-end">
+                  <h3 className="text-white font-serif text-lg leading-tight mb-2">Por que<br/>custa mais?</h3>
+                  <Link to="/sobre" className="inline-flex items-center text-[#c9a263] text-[11px] font-bold uppercase tracking-widest hover:text-white transition-colors">
+                    Ver vídeo <ArrowRight size={14} className="ml-1.5" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Card 3 */}
+              <div title="Como chega a mim?" className="group overflow-hidden rounded-2xl relative aspect-[4/5] bg-[#0a0a0a] border border-[#a3a3a3]/10 shadow-lg cursor-pointer flex flex-col justify-between">
+                <img alt="Frescor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpcnfw1r2x5yjy47XwBEHxr9X4xOa2xwDwiM9SwosiYP2_mpztWjrhAVZiAk-Pva0Uw77ddkS8YphEFeO0iQtC3d0GtYelVfNOADDTviRgMvlts7r8MH5rF9mo70DgUKitIZgbrF1LBvnP9jC0UBwE-sJfFL4_YtbwmyMEsaaBZYL7BVVbeCknn5F4ZYqUZuB7MwaJ9qlzEbKhwPLiSMVf6nFQAUFJZ-5LyZgLApOuYd1u9dLy1rIpu-RuYq3uzxjM0lIXq5Bd6gyR" className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500 mix-blend-lighten" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none"></div>
+                
+                <div className="relative z-10 p-4">
+                  <span className="inline-block bg-[#111111]/80 backdrop-blur-md border border-[#a3a3a3]/20 text-[#a3a3a3] text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">
+                    Frescor
+                  </span>
+                </div>
+
+                <div className="absolute bottom-0 left-0 w-full p-5 z-10 flex flex-col justify-end">
+                  <h3 className="text-white font-serif text-lg leading-tight mb-2">Como chega<br/>a mim?</h3>
+                  <Link to="/sobre" className="inline-flex items-center text-[#c9a263] text-[11px] font-bold uppercase tracking-widest hover:text-white transition-colors">
+                    Ver processo <ArrowRight size={14} className="ml-1.5" />
+                  </Link>
+                </div>
               </div>
             </div>
-          </motion.div>
-        </div>
-
-        {/* Video Grid Section */}
-        <div className="relative z-10 text-center pt-8 pb-8">
-           <h3 className="text-white text-3xl font-serif">Antes de escolher seu café, entenda a diferença.</h3>
-        </div>
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6 pb-6 px-4 sm:px-8">
-          {/* Card 1 */}
-          <article className="bg-[#1a1a1a] border border-[#a3a3a3]/10 rounded-2xl overflow-hidden flex flex-col group cursor-default shadow-lg hover:-translate-y-1 hover:shadow-[#c9a263]/10 transition-all duration-300">
-            <div className="relative aspect-video bg-[#0a0a0a]">
-              <img alt="Por que esse café é especial?" className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity mix-blend-lighten" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLQUsxk_5LqhPjy4zmw2AAhVDerTR_qrH-EYZjSkk90w0vRc1HgqQ12cOvzFRtQ5Yi1MQTUhcUxfl6rFlqNqrtkYAoazavoytXeCfvVGJRokQgj-o0u3m_pYkM1B4lThLC9FDNmesfwRb8isK6mdxxZ9Py3muGc_Uvw8pSEBbK-_n3J9t3_H2BnY7awmv9Y3In9fw5xxytWkd3zRFOdKao9zJc3dNAoEu4B50LVEjG9X8Mxa3YLLwkxeiUWVwEQWL7gv_FwBks305E"/>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/20 to-transparent"></div>
-              <span className="absolute top-4 right-4 bg-[#111111]/80 backdrop-blur-md border border-[#a3a3a3]/20 text-[#a3a3a3] text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">Qualidade</span>
-            </div>
-            <div className="p-6 md:p-8 flex-1 flex flex-col">
-              <h3 className="text-xl font-serif text-white mb-3 flex-1 flex items-end">Por que esse café é especial?</h3>
-              <p className="text-sm text-[#a3a3a3] mb-6 leading-relaxed flex-1">Pontuação, seleção de lote e diferença real contra café comum.</p>
-              <Link to="/sobre" className="inline-flex items-center text-[#c9a263] text-[11px] font-bold uppercase tracking-widest hover:text-white transition-colors">
-                 Entender a diferença <ArrowRight size={14} className="ml-2" />
-              </Link>
-            </div>
-          </article>
-          {/* Card 2 */}
-          <article className="bg-[#1a1a1a] border border-[#a3a3a3]/10 rounded-2xl overflow-hidden flex flex-col group cursor-default shadow-lg hover:-translate-y-1 hover:shadow-[#c9a263]/10 transition-all duration-300">
-            <div className="relative aspect-video bg-[#0a0a0a]">
-              <img alt="Por que custa mais?" className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity mix-blend-lighten" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2KqCkpw1B4GssO3fg-tekCqKBRe_oolOZjQBrTVT7cgxWnGE0JetEKl2vlYaPvrzrcp0HuSSDGWnuSiMe_LilwYCn6OkF8h1nFNqo4sSPUhYA39M1-tFexPVEnMlqKbanksE6IL44TY5n0BC3qM_-fIqjBZbR2N-M2FMA4kgtyJc-OFrpesytK2B7Hrp2PrdiJHYO9vzO0qv42QN7KruySAo6ZJCRqz8nWo93CapVFyffHm_djirReatFNFYUYQzNLOMpfoA0Ygii"/>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/20 to-transparent"></div>
-              <span className="absolute top-4 right-4 bg-[#111111]/80 backdrop-blur-md border border-[#a3a3a3]/20 text-[#a3a3a3] text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">Valor Justo</span>
-            </div>
-            <div className="p-6 md:p-8 flex-1 flex flex-col">
-              <h3 className="text-xl font-serif text-white mb-3 flex-1 flex items-end">Por que custa mais?</h3>
-              <p className="text-sm text-[#a3a3a3] mb-6 leading-relaxed flex-1">Origem, safra, torra sob demanda e rastreabilidade explicados sem complicar.</p>
-              <Link to="/sobre" className="inline-flex items-center text-[#c9a263] text-[11px] font-bold uppercase tracking-widest hover:text-white transition-colors">
-                 Ver o valor do lote <ArrowRight size={14} className="ml-2" />
-              </Link>
-            </div>
-          </article>
-          {/* Card 3 */}
-          <article className="bg-[#1a1a1a] border border-[#a3a3a3]/10 rounded-2xl overflow-hidden flex flex-col group cursor-default shadow-lg hover:-translate-y-1 hover:shadow-[#c9a263]/10 transition-all duration-300">
-            <div className="relative aspect-video bg-[#0a0a0a]">
-              <img alt="Como chega até mim?" className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity mix-blend-lighten" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpcnfw1r2x5yjy47XwBEHxr9X4xOa2xwDwiM9SwosiYP2_mpztWjrhAVZiAk-Pva0Uw77ddkS8YphEFeO0iQtC3d0GtYelVfNOADDTviRgMvlts7r8MH5rF9mo70DgUKitIZgbrF1LBvnP9jC0UBwE-sJfFL4_YtbwmyMEsaaBZYL7BVVbeCknn5F4ZYqUZuB7MwaJ9qlzEbKhwPLiSMVf6nFQAUFJZ-5LyZgLApOuYd1u9dLy1rIpu-RuYq3uzxjM0lIXq5Bd6gyR"/>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/20 to-transparent"></div>
-              <span className="absolute top-4 right-4 bg-[#111111]/80 backdrop-blur-md border border-[#a3a3a3]/20 text-[#a3a3a3] text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-sm">Frescor</span>
-            </div>
-            <div className="p-6 md:p-8 flex-1 flex flex-col">
-              <h3 className="text-xl font-serif text-white mb-3 flex-1 flex items-end">Como chega até mim?</h3>
-              <p className="text-sm text-[#a3a3a3] mb-6 leading-relaxed flex-1">Torra, embalagem, envio e frescor até a sua xícara.</p>
-              <Link to="/sobre" className="inline-flex items-center text-[#c9a263] text-[11px] font-bold uppercase tracking-widest hover:text-white transition-colors">
-                 Ver o processo <ArrowRight size={14} className="ml-2" />
-              </Link>
-            </div>
-          </article>
+          </div>
         </div>
       </div>
 
