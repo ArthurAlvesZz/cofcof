@@ -16,7 +16,7 @@ import {
   Lock,
   Target
 } from 'lucide-react';
-import { AdminPopup } from './ui/AdminPopup';
+import { AdminDrawer } from './AdminDrawer';
 import { AdminFormSection } from './ui/AdminFormSection';
 import { Coupon } from '../../types/admin';
 import toast from 'react-hot-toast';
@@ -89,10 +89,10 @@ export function CouponFormDrawer({ isOpen, onClose, onSave, coupon }: CouponForm
   };
 
   return (
-    <AdminPopup
+    <AdminDrawer
       isOpen={isOpen}
       onClose={onClose}
-      size="premium"
+      width="lg"
       title={coupon?.id ? "Editar Cupom" : "Novo Cupom de Desconto"}
       subtitle="Defina o tipo de benefício, regras de validade e limites de uso."
       footer={
@@ -315,6 +315,6 @@ export function CouponFormDrawer({ isOpen, onClose, onSave, coupon }: CouponForm
            </div>
         </div>
       </div>
-    </AdminPopup>
+    </AdminDrawer>
   );
 }

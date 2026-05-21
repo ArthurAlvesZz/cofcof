@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Calendar, DollarSign, Package, TrendingUp, ChevronDown, ChevronUp, Clock, History, Target, Flame } from 'lucide-react';
+import { Calendar, Package, Flame, Target, Layers, Handshake, AlertTriangle, Zap, ArrowRight, History } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { OperationEmptyState } from './OperationEmptyState';
 
 interface DailyOverviewProps {
   dates: {start: Date, end: Date};
@@ -11,153 +9,139 @@ interface DailyOverviewProps {
 }
 
 export function DailyOverview({ dates, stats, onAction }: DailyOverviewProps) {
-  const [expandedDate, setExpandedDate] = useState<string | null>(null);
-  
-  // In a real scenario we'd query events grouped by day from the DB.
-  // Here we'll simulate the daily view structural layout required.
-  const todayStr = format(dates.start, "dd/MM/yyyy");
-  const mockDayStr = todayStr;
-  
   const hasEvents = stats?.operationalEventsCount > 0 || (stats?.roastedKgInPeriod > 0) || (stats?.rawLotsLaunchedInPeriod > 0);
 
-  if (!hasEvents) {
-    return (
-      <OperationEmptyState
-        icon={History}
-        title="Sem eventos registrados"
-        description="Nenhuma operação foi lançada no período selecionado."
-        actionLabel="Lançar Operação"
-        onAction={() => onAction?.('launch_lot')}
-      />
-    );
-  }
-  
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-         <div>
-            <h2 className="text-xl font-black tracking-tight text-[#1C1A17]">Diário Operacional</h2>
-            <p className="text-xs text-gray-500 font-medium">Acompanhamento diário da operação</p>
-         </div>
-         <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-             <Calendar size={16} className="text-gray-400" />
-             <span className="text-xs font-black text-[#1C1A17]">Período selecionado</span>
-         </div>
+    <div className="flex flex-col gap-6 w-full animate-in fade-in duration-500">
+      <div className="border-b border-[#a3a3a3]/10 pb-4 mb-2 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-serif text-[#0a0a0a]">Diário Operacional</h2>
+            <p className="text-sm text-[#a3a3a3] font-medium mt-1">Linha do tempo e registros de atividades.</p>
+          </div>
+          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-[#a3a3a3]/20 shadow-sm">
+             <Calendar size={16} className="text-[#c9a263]" />
+             <span className="text-xs font-bold text-[#0a0a0a]">
+                {format(dates.start, "dd/MM/yyyy")} {dates.start.toDateString() !== dates.end.toDateString() && `- ${format(dates.end, "dd/MM/yyyy")}`}
+             </span>
+          </div>
       </div>
 
-      <div className="bg-white rounded-[2rem] border border-gray-200 overflow-hidden shadow-sm transition-all hover:border-[#B06A32]/30 hover:shadow-lg">
-         
-         {/* CABEÇALHO DO DIA (Clicável para expandir) */}
-         <div 
-            className="p-6 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
-            onClick={() => setExpandedDate(expandedDate === mockDayStr ? null : mockDayStr)}
-         >
-             <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
-                    <Calendar size={20} />
-                 </div>
-                 <div>
-                    <h3 className="text-lg font-black text-[#1C1A17]">{mockDayStr}</h3>
-                    <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-0.5">{stats?.operationalEventsCount || 0} eventos registrados</p>
+      {!hasEvents ? (
+         <div className="bg-white rounded-[24px] p-12 flex flex-col items-center justify-center text-center shadow-sm border border-[#a3a3a3]/10 min-h-[400px]">
+             <div className="w-16 h-16 bg-[#fcfaf8] rounded-full flex items-center justify-center text-[#c9a263] border border-[#c9a263]/20 mb-6 shrink-0">
+                 <History size={24} />
+             </div>
+             <h3 className="text-xl font-serif text-[#0a0a0a] mb-2">Nenhuma movimentação registrada neste período.</h3>
+             <p className="text-sm text-[#a3a3a3] max-w-md mx-auto mb-8">
+                 Tudo tranquilo por enquanto. Quando houver entrada de lotes, torras, empacotamento ou saídas, elas aparecerão aqui.
+             </p>
+             <button onClick={() => onAction?.('launch_lot')} className="flex items-center gap-2 bg-[#0a0a0a] text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#c9a263] transition-all shadow-sm active:scale-95">
+                 <Zap size={16} />
+                 Registrar primeira movimentação
+             </button>
+         </div>
+      ) : (
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+             <div className="lg:col-span-2 bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-[#a3a3a3]/10 relative">
+                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#a3a3a3] mb-6">Timeline de Operações</h3>
+                 
+                 <div className="relative border-l border-[#a3a3a3]/20 ml-2 sm:ml-4 space-y-8 pb-4">
+                     {/* Simulando eventos baseados nas stats globais */}
+                     {(stats?.rawLotsLaunchedInPeriod > 0) && (
+                         <div className="relative pl-6 sm:pl-8">
+                             <div className="absolute -left-3 pt-1">
+                                 <div className="w-6 h-6 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center">
+                                     <div className="w-2 h-2 rounded-full bg-indigo-600"></div>
+                                 </div>
+                             </div>
+                             <p className="text-[10px] font-bold text-[#a3a3a3] bg-[#fcfaf8] px-2 py-0.5 rounded inline-block mb-1 border border-[#a3a3a3]/10">LOTE CRU</p>
+                             <p className="text-sm font-bold text-[#0a0a0a]">Entrada de café cru registrada</p>
+                             <p className="text-xs font-medium text-[#a3a3a3] mt-1">{stats?.rawLotsLaunchedInPeriod} lote(s) • {stats?.rawKgPurchasedInPeriod}kg no período</p>
+                         </div>
+                     )}
+                     
+                     {(stats?.roastedKgInPeriod > 0) && (
+                         <div className="relative pl-6 sm:pl-8">
+                             <div className="absolute -left-3 pt-1">
+                                 <div className="w-6 h-6 rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center">
+                                     <div className="w-2 h-2 rounded-full bg-orange-600"></div>
+                                 </div>
+                             </div>
+                             <p className="text-[10px] font-bold text-[#a3a3a3] bg-[#fcfaf8] px-2 py-0.5 rounded inline-block mb-1 border border-[#a3a3a3]/10">PRODUÇÃO</p>
+                             <p className="text-sm font-bold text-[#0a0a0a]">Sessão de torra realizada</p>
+                             <p className="text-xs font-medium text-[#a3a3a3] mt-1">{stats?.roastsCountInPeriod} torra(s) • {stats?.roastedKgInPeriod}kg processados</p>
+                         </div>
+                     )}
+
+                     {(stats?.packagedUnitsInPeriod > 0) && (
+                         <div className="relative pl-6 sm:pl-8">
+                             <div className="absolute -left-3 pt-1">
+                                 <div className="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center">
+                                     <div className="w-2 h-2 rounded-full bg-amber-600"></div>
+                                 </div>
+                             </div>
+                             <p className="text-[10px] font-bold text-[#a3a3a3] bg-[#fcfaf8] px-2 py-0.5 rounded inline-block mb-1 border border-[#a3a3a3]/10">EMPACOTAMENTO</p>
+                             <p className="text-sm font-bold text-[#0a0a0a]">Produto finalizado em estoque</p>
+                             <p className="text-xs font-medium text-[#a3a3a3] mt-1">{stats?.packagedUnitsInPeriod} pacotes embalados</p>
+                         </div>
+                     )}
+                     
+                     {(stats?.criticalAlertsCount > 0) && (
+                         <div className="relative pl-6 sm:pl-8">
+                             <div className="absolute -left-3 pt-1">
+                                 <div className="w-6 h-6 rounded-full bg-red-50 border border-red-200 flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+                                     <div className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></div>
+                                 </div>
+                             </div>
+                             <p className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded inline-block mb-1 border border-red-100">ALERTA</p>
+                             <p className="text-sm font-bold text-red-600">Alerta(s) gerados na operação</p>
+                             <p className="text-xs font-medium text-red-400 mt-1">{stats?.criticalAlertsCount} pendências registradas para correção.</p>
+                         </div>
+                     )}
+                     
+                     {/* End of timeline cap */}
+                     <div className="relative pl-8 mt-4">
+                        <div className="absolute -left-[5px] top-0 w-3 h-3 bg-[#a3a3a3]/20 rounded-full"></div>
+                     </div>
                  </div>
              </div>
-             
-             <div className="flex flex-wrap items-center gap-3">
-                 <div className="flex items-center gap-1 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                    <Flame size={12} className="text-orange-500"/>
-                    <span className="text-[10px] font-black text-gray-700">{stats?.roastedKgInPeriod || 0}kg</span>
+
+             <div className="flex flex-col gap-4">
+                 <div className="bg-[#111111] rounded-[24px] p-6 shadow-sm border border-[#c9a263]/20">
+                     <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#a3a3a3] mb-6">Resumo Quantitativo</h3>
+                     <div className="grid grid-cols-2 gap-4">
+                         <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#a3a3a3]/10">
+                            <Target size={16} className="text-[#a3a3a3] mb-2" />
+                            <p className="text-xs font-medium text-[#a3a3a3] mb-1">Café Cru</p>
+                            <p className="text-xl font-serif text-white">{stats?.rawKgPurchasedInPeriod || 0}kg</p>
+                         </div>
+                         <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#a3a3a3]/10">
+                            <Flame size={16} className="text-[#c9a263] mb-2" />
+                            <p className="text-xs font-medium text-[#a3a3a3] mb-1">Torrado</p>
+                            <p className="text-xl font-serif text-white">{stats?.roastedKgInPeriod || 0}kg</p>
+                         </div>
+                         <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#a3a3a3]/10">
+                            <Package size={16} className="text-[#c9a263] mb-2" />
+                            <p className="text-xs font-medium text-[#a3a3a3] mb-1">Pacotes</p>
+                            <p className="text-xl font-serif text-white">{stats?.packagedUnitsInPeriod || 0} un</p>
+                         </div>
+                         <div className="bg-[#1a1a1a] rounded-xl p-4 border border-[#a3a3a3]/10">
+                            <Handshake size={16} className="text-[#a3a3a3] mb-2" />
+                            <p className="text-xs font-medium text-[#a3a3a3] mb-1">Consignado</p>
+                            <p className="text-xl font-serif text-white">{stats?.consignedInPeriod || 0} un</p>
+                         </div>
+                     </div>
                  </div>
-                 <div className="flex items-center gap-1 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                    <Package size={12} className="text-amber-500"/>
-                    <span className="text-[10px] font-black text-gray-700">{stats?.packagedUnitsInPeriod || 0} un</span>
-                 </div>
-                 <div className="flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
-                    <DollarSign size={12} className="text-emerald-600"/>
-                    <span className="text-[10px] font-black text-emerald-700">R$ {((stats?.packagedUnitsInPeriod || 0) * 45).toLocaleString('pt-BR')}</span>
-                 </div>
-                 <button className="w-8 h-8 flex flex-shrink-0 items-center justify-center bg-gray-50 rounded-full text-gray-500">
-                     {expandedDate === mockDayStr ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                 
+                 <button onClick={() => onAction?.('launch_lot')} className="w-full bg-white border border-[#a3a3a3]/20 text-[#0a0a0a] rounded-xl p-4 font-bold text-xs uppercase tracking-widest hover:border-[#0a0a0a] hover:bg-[#fafafa] transition-all flex items-center justify-between group">
+                     Registrar nova entrada
+                     <div className="w-6 h-6 rounded-full border border-[#a3a3a3]/20 flex items-center justify-center text-[#a3a3a3] group-hover:bg-[#0a0a0a] group-hover:text-white transition-all">
+                         <ArrowRight size={12} />
+                     </div>
                  </button>
              </div>
          </div>
-
-         {/* ÁREA EXPANDIDA (Timeline e Detalhes do Dia) */}
-         {expandedDate === mockDayStr && (
-             <div className="border-t border-gray-100 bg-gray-50/50 p-6 sm:p-8 animate-in slide-in-from-top-4 duration-300">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    
-                    {/* Coluna Esquerda: Métricas do Dia */}
-                    <div>
-                        <h4 className="text-xs font-black uppercase tracking-widest text-[#1C1A17] mb-6">Métricas do Dia</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white p-4 rounded-2xl border border-gray-200">
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Café Cru Entrou</p>
-                                <p className="text-lg font-black text-[#1C1A17]">{stats?.rawKgPurchasedInPeriod || 0}kg</p>
-                            </div>
-                            <div className="bg-white p-4 rounded-2xl border border-orange-100">
-                                <p className="text-[9px] font-bold text-orange-400 uppercase tracking-widest mb-1">Café Torrado</p>
-                                <p className="text-lg font-black text-orange-600">{stats?.roastedKgInPeriod || 0}kg</p>
-                            </div>
-                            <div className="bg-white p-4 rounded-2xl border border-amber-100">
-                                <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest mb-1">200g / 1kg Pct</p>
-                                <p className="text-lg font-black text-amber-600">{stats?.packagedByFormat?.['200g'] || 0} / {stats?.packagedByFormat?.['1kg'] || 0}</p>
-                            </div>
-                            <div className="bg-white p-4 rounded-2xl border border-emerald-100">
-                                <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Consignações / Vendas</p>
-                                <p className="text-lg font-black text-emerald-600">R$ {stats?.pendingConsignmentValue?.toLocaleString('pt-BR') || 0}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Coluna Direita: Timeline do Dia */}
-                    <div>
-                        <h4 className="text-xs font-black uppercase tracking-widest text-[#1C1A17] mb-6 flex items-center gap-2">
-                           <History size={14} className="text-gray-400" /> Timeline Operacional
-                        </h4>
-                        
-                        <div className="relative border-l-2 border-gray-200 ml-3 space-y-6">
-                            {/* Dummy Timeline Items */}
-                            <div className="relative pl-6">
-                                <span className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                                </span>
-                                <div className="text-[10px] font-bold text-gray-400 mb-1">08:12</div>
-                                <p className="text-sm font-black text-[#1C1A17]">Arthur lançou lote <span className="text-indigo-600">Cerrado Doce Misto</span></p>
-                                <p className="text-xs font-medium text-gray-500">200kg • R$ 38,00/kg</p>
-                            </div>
-                            
-                            <div className="relative pl-6">
-                                <span className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-orange-100 border-2 border-white flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                                </span>
-                                <div className="text-[10px] font-bold text-gray-400 mb-1">10:30</div>
-                                <p className="text-sm font-black text-[#1C1A17]">Torra registrada <span className="text-orange-600">(18kg fluidos)</span></p>
-                                <p className="text-xs font-medium text-gray-500">Perfil: Espresso Base • Mestre: João</p>
-                            </div>
-                            
-                            <div className="relative pl-6">
-                                <span className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-amber-100 border-2 border-white flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                                </span>
-                                <div className="text-[10px] font-bold text-gray-400 mb-1">13:50</div>
-                                <p className="text-sm font-black text-[#1C1A17]">Empacotamento <span className="text-amber-600">84 pacotes 200g</span></p>
-                                <p className="text-xs font-medium text-gray-500">Origem: Torra #452</p>
-                            </div>
-
-                            <div className="relative pl-6">
-                                <span className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-pink-100 border-2 border-white flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-                                </span>
-                                <div className="text-[10px] font-bold text-gray-400 mb-1">15:20</div>
-                                <p className="text-sm font-black text-[#1C1A17]">Mestre João encerrou turno</p>
-                                <p className="text-xs font-medium text-gray-500">4h trabalhadas aprovadas</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-             </div>
-         )}
-      </div>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ export interface AdminConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   isDestructive?: boolean;
+  requireString?: string;
 }
 
 export function AdminConfirmDialog({
@@ -20,11 +21,16 @@ export function AdminConfirmDialog({
   description,
   confirmLabel = 'Confirmar',
   cancelLabel = 'Cancelar',
-  isDestructive = false
+  isDestructive = false,
+  requireString
 }: AdminConfirmDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+
+  const isConfirmDisabled = requireString ? inputValue !== requireString : false;
 
   const handleConfirm = async () => {
+    if (isConfirmDisabled) return;
     setLoading(true);
     try {
       await onConfirm();
@@ -32,7 +38,10 @@ export function AdminConfirmDialog({
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (isOpen) {
+        setLoading(false);
+        setInputValue('');
+      }
     }
   };
 
@@ -42,34 +51,43 @@ export function AdminConfirmDialog({
       onClose={onClose}
       title={title}
       size="md"
-      footer={
-        <>
-          <button
-            onClick={onClose}
-            className="text-gray-500 font-medium hover:text-[#1C1A17] transition-colors"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={loading}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
-              isDestructive
-                ? 'bg-red-900 border border-red-500 hover:bg-red-800 text-white'
-                : 'bg-[#111111] hover:bg-black text-[#c9a263] border border-[#a3a3a3]/20 shadow-[0_0_15px_rgba(201,162,99,0.1)]'
-            }`}
-          >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : null}
-            {confirmLabel}
-          </button>
-        </>
-      }
+      variant={isDestructive ? 'danger' : 'default'}
+      intent="confirm"
+      isBusy={loading}
+      preventBackdropClose={true}
+      primaryAction={{
+        label: confirmLabel,
+        onClick: handleConfirm,
+        loading: loading,
+        disabled: isConfirmDisabled,
+        variant: isDestructive ? 'danger' : 'primary'
+      }}
+      secondaryAction={{
+        label: cancelLabel,
+        onClick: onClose,
+      }}
     >
-      <div className="text-[#a3a3a3] mb-2">
+      <div className={`mb-2 text-sm leading-relaxed ${isDestructive ? 'text-red-950 font-medium' : 'text-[#a3a3a3]'}`}>
         {description}
       </div>
+      {requireString && (
+        <div className="mt-4">
+          <label className={`block text-xs font-bold mb-2 uppercase tracking-widest ${isDestructive ? 'text-red-800' : 'text-[#a3a3a3]'}`}>
+            Digite {requireString} para confirmar
+          </label>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            className={`w-full px-4 py-3 border rounded-xl text-sm outline-none transition-colors ${
+              isDestructive
+                ? 'bg-red-50 border-red-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 text-red-950 placeholder:text-red-300'
+                : 'bg-[#111111] border-[#333] focus:border-[#c9a263] text-white'
+            }`}
+            placeholder={requireString}
+          />
+        </div>
+      )}
     </AdminPopup>
   );
 }

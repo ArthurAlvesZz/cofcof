@@ -16,7 +16,7 @@ import {
   Type,
   FileSearch
 } from 'lucide-react';
-import { AdminPopup } from './ui/AdminPopup';
+import { AdminDrawer } from './AdminDrawer';
 import { AdminFormSection } from './ui/AdminFormSection';
 import { ContentBlock } from '../../types/admin';
 import toast from 'react-hot-toast';
@@ -105,10 +105,10 @@ export function ContentBlockFormDrawer({ isOpen, onClose, onSave, block }: Conte
   };
 
   return (
-    <AdminPopup
+    <AdminDrawer
       isOpen={isOpen}
       onClose={onClose}
-      size="premium"
+      width="lg"
       title={block?.id ? "Editar Bloco de Conteúdo" : "Novo Bloco de Conteúdo"}
       subtitle="Gerencie textos, chamadas e metadados SEO das páginas do CofCof."
       footer={
@@ -371,6 +371,6 @@ export function ContentBlockFormDrawer({ isOpen, onClose, onSave, block }: Conte
            </div>
         </div>
       </div>
-    </AdminPopup>
+    </AdminDrawer>
   );
 }

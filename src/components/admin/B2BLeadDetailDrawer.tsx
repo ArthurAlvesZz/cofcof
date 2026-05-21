@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { B2BLead } from '../../types/admin';
 import { MessageCircle, Briefcase, Calculator, FileText, CheckCircle, RotateCcw } from 'lucide-react';
-import { AdminPopup } from './ui/AdminPopup';
+import { AdminDrawer } from './AdminDrawer';
 
 interface B2BLeadDetailDrawerProps {
   lead: B2BLead | null;
@@ -117,11 +117,11 @@ export function B2BLeadDetailDrawer({
   );
 
   return (
-    <AdminPopup
+    <AdminDrawer
       isOpen={isOpen}
       onClose={onClose}
       title={headerContent}
-      size="2xl"
+      width="xl"
       footer={footerContent}
     >
         <div className="min-h-[50vh]">
@@ -368,6 +368,6 @@ export function B2BLeadDetailDrawer({
            )}
 
         </div>
-    </AdminPopup>
+    </AdminDrawer>
   );
 }

@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AdminConfirmDialog } from './ui/AdminConfirmDialog';
-import { AdminPopup } from './ui/AdminPopup';
+import { AdminDrawer } from './AdminDrawer';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface OrderDetailDrawerProps {
@@ -159,49 +159,17 @@ Status: ${getStatusLabel(order.status)}`;
 
   return (
     <>
-      <AdminPopup
+      <AdminDrawer
         isOpen={isOpen}
         onClose={onClose}
-        size="premium"
-        title={
-          <div className="flex items-center justify-between w-full pr-8">
-             <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#F6F1EB] rounded-2xl flex items-center justify-center text-[#B06A32]">
-                   <ShoppingCart size={24} />
-                </div>
-                <div>
-                   <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-black text-[#1C1A17]">{order.orderNumber}</h2>
-                      <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-gray-100 text-gray-500`}>
-                        ID: {order.id.slice(-6).toUpperCase()}
-                      </span>
-                   </div>
-                   <div className="flex items-center gap-3 mt-1">
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                         {order.customer.name}
-                      </p>
-                      <div className="w-1 h-1 bg-gray-200 rounded-full" />
-                      <div className="flex items-center gap-1 text-[10px] font-black text-[#B06A32] uppercase">
-                         <Activity size={10} /> {getStatusLabel(order.status)}
-                      </div>
-                   </div>
-                </div>
-             </div>
-
-             <div className="hidden md:flex items-center gap-2 px-6 py-3 bg-gray-50 rounded-2xl border border-gray-100">
-                <div className="text-right mr-3 pr-3 border-r border-gray-200">
-                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor do Pedido</p>
-                   <p className="text-lg font-black text-[#1C1A17]">R$ {order.total.toFixed(2)}</p>
-                </div>
-                <div className="text-right">
-                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Status Fin.</p>
-                   <div className={`flex items-center justify-end gap-1.5 text-xs font-black uppercase ${order.payment.status === 'approved' ? 'text-green-600' : 'text-amber-500'}`}>
-                      {order.payment.status === 'approved' ? <CheckCircle size={14} /> : <Clock size={14} />}
-                      {order.payment.status === 'approved' ? 'Aprovado' : 'Pendente'}
-                   </div>
-                </div>
-             </div>
-          </div>
+        width="xl"
+        eyebrow={`Pedido • ${order.id.slice(-6).toUpperCase()}`}
+        title={`Pedido ${order.orderNumber}`}
+        subtitle={`Cliente: ${order.customer.name}`}
+        statusBadge={
+          <span className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${getStatusColor(order.status)}`}>
+             {getStatusLabel(order.status)}
+          </span>
         }
         footer={
           <div className="flex items-center justify-between w-full px-2">
@@ -689,7 +657,7 @@ Status: ${getStatusLabel(order.status)}`;
              </div>
           </div>
         </div>
-      </AdminPopup>
+      </AdminDrawer>
 
       {statusToChange && (
         <AdminConfirmDialog

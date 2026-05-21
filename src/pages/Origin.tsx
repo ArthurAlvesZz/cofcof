@@ -14,7 +14,7 @@ import {
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { publicContentService } from '../services/publicContentService';
 import { ContentBlock } from '../types/admin';
 import { MapContainer, TileLayer, Marker, useMap, ZoomControl } from 'react-leaflet';
@@ -70,17 +70,26 @@ export default function Origin() {
   const [mapFilter, setMapFilter] = useState('Todos');
 
   const filterOptions = [
-    { id: 'Todos', label: 'Todos', test: (f: OriginFarm) => true },
-    { id: '86+ SCA', label: '86+ SCA', test: (f: OriginFarm) => (f.scaScore || 0) >= 86 },
-    { id: 'Natural', label: 'Natural', test: (f: OriginFarm) => f.process.toLowerCase().includes('natural') },
-    { id: 'Fermentado', label: 'Fermentado', test: (f: OriginFarm) => f.process.toLowerCase().includes('fermentado') },
-    { id: 'Disponível agora', label: 'Disponível agora', test: (f: OriginFarm) => f.active && !!f.linkedProductSlug }
+    { id: 'Todos', label: 'Todos', test: (f: OriginFarm) => true, category: 'Técnico' },
+    { id: '86+ SCA', label: '86+ SCA', test: (f: OriginFarm) => (f.scaScore || 0) >= 86, category: 'Técnico' },
+    { id: 'Natural', label: 'Natural', test: (f: OriginFarm) => f.process.toLowerCase().includes('natural'), category: 'Técnico' },
+    { id: 'Fermentado', label: 'Fermentado', test: (f: OriginFarm) => f.process.toLowerCase().includes('fermentado'), category: 'Técnico' },
+    { id: 'Honey', label: 'Honey', test: (f: OriginFarm) => f.process.toLowerCase().includes('honey'), category: 'Técnico' },
+    { id: 'Cup of Excellence', label: 'Cup of Excellence', test: (f: OriginFarm) => f.featured || (f.scaScore || 0) >= 88, category: 'Técnico' },
+
+    { id: 'Mais doce', label: 'Mais doce', test: (f: OriginFarm) => f.sensoryNotes.toLowerCase().includes('caramelo') || f.sensoryNotes.toLowerCase().includes('doce') || f.sensoryNotes.toLowerCase().includes('chocolate') || f.sensoryNotes.toLowerCase().includes('melaço'), category: 'Sensorial' },
+    { id: 'Mais floral', label: 'Mais floral', test: (f: OriginFarm) => f.sensoryNotes.toLowerCase().includes('floral') || f.sensoryNotes.toLowerCase().includes('jasmim') || f.sensoryNotes.toLowerCase().includes('chá'), category: 'Sensorial' },
+    { id: 'Mais frutado', label: 'Mais frutado', test: (f: OriginFarm) => f.sensoryNotes.toLowerCase().includes('fruta') || f.sensoryNotes.toLowerCase().includes('morango') || f.sensoryNotes.toLowerCase().includes('pêssego') || f.sensoryNotes.toLowerCase().includes('licor'), category: 'Sensorial' },
+    
+    { id: 'Disponível agora', label: 'Disponível agora', test: (f: OriginFarm) => f.active && !!f.linkedProductSlug, category: 'Comercial' },
   ];
 
   const filteredFarms = mockOriginFarms.filter(farm => {
     const opt = filterOptions.find(o => o.id === mapFilter);
     return opt ? opt.test(farm) : true;
   });
+
+  const [searchParams] = useSearchParams();
 
   // Set default farm and handle filter active sync
   useEffect(() => {
@@ -97,12 +106,49 @@ export default function Origin() {
     }
   }, [mapFilter]); // Deliberately only on mapFilter change to not override user clicks unless filtered out
 
-  // Initial load default
+  // Initial load default and read query params
   useEffect(() => {
-    if (!activeFarm && filteredFarms.length > 0) {
+    const farmId = searchParams.get('farmId');
+    const filterFromUrl = searchParams.get('originFilter');
+    const focusMap = searchParams.get('focusMap');
+
+    window.scrollTo(0, 0);
+    document.title = "Origem | CofCof.co";
+
+    if (filterFromUrl && filterOptions.some(o => o.id === filterFromUrl)) {
+      setMapFilter(filterFromUrl);
+    }
+
+    if (farmId) {
+      const farmTarget = mockOriginFarms.find(f => f.id === farmId);
+      if (farmTarget) {
+        setActiveFarm(farmTarget);
+        if (focusMap === '1' || window.location.hash.includes('mapa-origem')) {
+          setTimeout(() => {
+            scrollToSection('mapa-origem');
+          }, 500); // give it time to render map
+        }
+      }
+    } else if (!activeFarm && filteredFarms.length > 0) {
       const defaultFarm = filteredFarms.find(f => f.featured) || filteredFarms.find(f => f.active) || filteredFarms[0];
       setActiveFarm(defaultFarm);
     }
+
+    // Scroll to section if hash exists
+    if (window.location.hash) {
+      const id = window.location.hash.substring(1);
+      setTimeout(() => scrollToSection(id), 500);
+    }
+
+    const fetchContent = async () => {
+      const blocks = await publicContentService.getPageContent('origem');
+      const contentMap: Record<string, Partial<ContentBlock>> = {};
+      blocks.forEach(b => {
+        contentMap[b.key] = b;
+      });
+      setContent(contentMap);
+    };
+    fetchContent();
   }, []);
 
   const getPinProps = (farm: OriginFarm) => {
@@ -134,7 +180,11 @@ export default function Origin() {
             ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>'
             : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>'
           }
-          <div class="absolute opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-[#111111] text-white text-[10px] px-2 py-1 rounded border border-white/10 -top-8 left-1/2 -translate-x-1/2 pointer-events-none z-50">Localização aproximada da região produtora</div>
+          <div class="absolute opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center whitespace-nowrap bg-[#111111] text-white text-[10px] p-2 rounded-lg border border-white/10 -top-12 left-1/2 -translate-x-1/2 pointer-events-none z-50 drop-shadow-2xl">
+            <span class="font-serif text-sm text-[#c9a263] mb-0.5">${farm.farmName}</span>
+            <span class="text-[#a3a3a3]">${farm.scaScore ? farm.scaScore + ' SCA · ' : ''} ${farm.process}</span>
+            ${props.hasLot ? '<span class="text-green-500 font-bold mt-1 uppercase text-[8px] tracking-widest">Disponível agora</span>' : ''}
+          </div>
         </div>
       `,
       iconSize: isActive ? [40, 40] : [32, 32],
@@ -142,19 +192,7 @@ export default function Origin() {
     });
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    document.title = "Origem | CofCof.co";
-    const fetchContent = async () => {
-      const blocks = await publicContentService.getPageContent('origem');
-      const contentMap: Record<string, Partial<ContentBlock>> = {};
-      blocks.forEach(b => {
-        contentMap[b.key] = b;
-      });
-      setContent(contentMap);
-    };
-    fetchContent();
-  }, []);
+
 
   const heroBlock = content['origem_hero'];
 
@@ -192,7 +230,7 @@ export default function Origin() {
               A origem que assina <span className="text-[#c9a263] italic">cada café</span> CofCof.
             </h1>
             <p className="text-lg md:text-xl text-[#a3a3a3] max-w-2xl mx-auto leading-relaxed font-light mb-8">
-              Do Cerrado Mineiro à sua xícara, cada lote carrega produtor, fazenda, altitude, safra, processo, pontuação sensorial e rastreabilidade.
+              Do Cerrado Mineiro à sua xícara. Você sabe exatamente o que está bebendo — e por que aquela xícara tem aquele sabor.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 text-[10px] sm:text-xs font-bold text-[#c9a263] uppercase tracking-widest mb-10 max-w-3xl mx-auto">
@@ -205,7 +243,7 @@ export default function Origin() {
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button 
-                onClick={() => scrollToSection('fazendas')}
+                onClick={() => scrollToSection('mapa-origem')}
                 className="premium-cta w-full sm:w-auto border-transparent bg-[#1a1a1a] text-[#a3a3a3] hover:text-white"
               >
                 Explorar mapa da origem
@@ -228,48 +266,48 @@ export default function Origin() {
         <div className="text-center mb-16">
            <div className="premium-badge mb-6 mx-auto inline-flex">Por que o Cerrado?</div>
            <h2 className="text-3xl md:text-5xl font-serif text-white mb-6">O que a origem muda no sabor?</h2>
-           <p className="text-[#a3a3a3] text-lg max-w-2xl mx-auto font-light">Origem não é decoração. É o que explica o sabor, a rastreabilidade e o valor de cada lote. Entenda como o terroir se prova na xícara.</p>
+           <p className="text-[#a3a3a3] text-lg max-w-2xl mx-auto font-light">Origem não é cenário. É o que explica o sabor, a rastreabilidade e o valor de cada lote. Entenda como o terroir se prova na xícara.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
            <div className="premium-card bg-[#111111] p-8 aspect-square flex flex-col justify-center">
              <Mountain size={24} className="text-[#c9a263] mb-4" />
              <h4 className="font-serif text-2xl text-white mb-3">Altitude</h4>
-             <div className="text-[10px] uppercase font-bold tracking-widest text-[#a3a3a3] mb-4 pb-4 border-b border-white/10">800–1.300m</div>
-             <p className="text-sm text-[#a3a3a3] leading-relaxed">Ajuda na maturação lenta e resulta em maior complexidade e doçura celular.</p>
+             <div className="text-[10px] uppercase font-bold tracking-widest text-[#a3a3a3] mb-4 pb-4 border-b border-white/10">Maturação Lenta</div>
+             <p className="text-sm text-[#a3a3a3] leading-relaxed">Cafés cultivados em altitude tendem a desenvolver doçura e camadas aromáticas mais ricas e complexas.</p>
            </div>
            
            <div className="premium-card bg-[#111111] p-8 aspect-square flex flex-col justify-center">
              <Sun size={24} className="text-[#c9a263] mb-4" />
              <h4 className="font-serif text-2xl text-white mb-3">Estações</h4>
              <div className="text-[10px] uppercase font-bold tracking-widest text-[#a3a3a3] mb-4 pb-4 border-b border-white/10">Inverno seco</div>
-             <p className="text-sm text-[#a3a3a3] leading-relaxed">Favorece uma secagem homogênea, sem fungos, garantindo uma xícara puríssima e limpa.</p>
+             <p className="text-sm text-[#a3a3a3] leading-relaxed">O clima definido ajuda na secagem e na consistência do lote, garantindo uma xícara puríssima e limpa.</p>
            </div>
            
            <div className="premium-card bg-[#111111] p-8 aspect-square flex flex-col justify-center">
              <Sprout size={24} className="text-[#c9a263] mb-4" />
              <h4 className="font-serif text-2xl text-white mb-3">Solo</h4>
-             <div className="text-[10px] uppercase font-bold tracking-widest text-[#a3a3a3] mb-4 pb-4 border-b border-white/10">Basalto nutritivo</div>
-             <p className="text-sm text-[#a3a3a3] leading-relaxed">Contribui para doçura alta, estrutura encorpada e notas de caramelo e chocolate inerentes ao bioma.</p>
+             <div className="text-[10px] uppercase font-bold tracking-widest text-[#a3a3a3] mb-4 pb-4 border-b border-white/10">Basalto</div>
+             <p className="text-sm text-[#a3a3a3] leading-relaxed">Solo mineral contribui para corpo, equilíbrio, doçura e perfil sensorial mais marcante.</p>
            </div>
            
            <div className="premium-card bg-[#111111] p-8 aspect-square flex flex-col justify-center">
              <Coffee size={24} className="text-[#c9a263] mb-4" />
              <h4 className="font-serif text-2xl text-white mb-3">Processos</h4>
-             <div className="text-[10px] uppercase font-bold tracking-widest text-[#a3a3a3] mb-4 pb-4 border-b border-white/10">Naturais & Fermentados</div>
-             <p className="text-sm text-[#a3a3a3] leading-relaxed">Intensifica frutas, corpo aveludado e a doçura extrema que define os melhores lotes da região.</p>
+             <div className="text-[10px] uppercase font-bold tracking-widest text-[#a3a3a3] mb-4 pb-4 border-b border-white/10">Natural & Fermentados</div>
+             <p className="text-sm text-[#a3a3a3] leading-relaxed">O processo muda panorama aromático, doçura, acidez e finalização da bebida.</p>
            </div>
         </div>
         
         <div className="text-center">
-          <button onClick={() => scrollToSection('fazendas')} className="premium-cta gap-2 inline-flex">
+          <button onClick={() => scrollToSection('mapa-origem')} className="premium-cta gap-2 inline-flex">
             Explorar origens no mapa <ChevronRight size={18} />
           </button>
         </div>
       </section>
 
       {/* 4. MAPA DA ORIGEM */}
-      <section id="fazendas" className="py-24 px-6 border-t border-[#a3a3a3]/10 bg-gradient-to-b from-[#111111]/30 to-[#0a0a0a] scroll-mt-24">
+      <section id="mapa-origem" className="py-24 px-6 border-t border-[#a3a3a3]/10 bg-gradient-to-b from-[#111111]/30 to-[#0a0a0a] scroll-mt-24">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12">
            
            {/* Painel Esquerdo */}
@@ -280,24 +318,32 @@ export default function Origin() {
               </p>
               <p className="text-white text-xs lg:text-sm font-medium mb-6">Clique em uma fazenda no mapa para ver produtor, lote, pontuação e café disponível.</p>
               
-              <div className="flex flex-wrap gap-2 mb-8">
-                {filterOptions.map(option => {
-                   const count = mockOriginFarms.filter(option.test).length;
-                   return (
-                     <button 
-                       key={option.id}
-                       onClick={() => setMapFilter(option.id)}
-                       className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-1.5 ${
-                         mapFilter === option.id 
-                           ? 'bg-[#c9a263] text-[#0a0a0a]' 
-                           : 'bg-[#111111] text-[#a3a3a3] border border-[#a3a3a3]/20 hover:border-[#c9a263]/50 hover:text-white'
-                       }`}
-                     >
-                       {option.label}
-                       <span className={`px-1.5 py-0.5 rounded text-[8px] bg-black/20 ${mapFilter === option.id ? 'text-black' : 'text-[#a3a3a3]'}`}>{count}</span>
-                     </button>
-                   );
-                })}
+              <div className="flex flex-col gap-4 mb-8">
+                {['Comercial', 'Sensorial', 'Técnico'].map(category => (
+                  <div key={category} className="flex flex-wrap gap-2">
+                    {filterOptions.filter(o => {
+                       if (category === 'Comercial' && o.id === 'Todos') return true;
+                       if (o.id === 'Todos') return false;
+                       return o.category === category;
+                    }).map(option => {
+                      const count = mockOriginFarms.filter(option.test).length;
+                      return (
+                        <button 
+                          key={option.id}
+                          onClick={() => setMapFilter(option.id)}
+                          className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-1.5 ${
+                            mapFilter === option.id 
+                              ? 'bg-[#c9a263] text-[#0a0a0a]' 
+                              : 'bg-[#111111] text-[#a3a3a3] border border-[#a3a3a3]/20 hover:border-[#c9a263]/50 hover:text-white'
+                          }`}
+                        >
+                          {option.label}
+                          <span className={`px-1.5 py-0.5 rounded text-[8px] bg-black/20 ${mapFilter === option.id ? 'text-black' : 'text-[#a3a3a3]'}`}>{count}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
               
               {mapFilter !== 'Todos' && (
@@ -343,7 +389,7 @@ export default function Origin() {
                        </div>
                        
                        <div className="flex gap-2">
-                          <Link to={`/cafes/${activeFarm.linkedProductSlug}`} className="premium-cta text-xs flex-1 text-center py-3">Ver Café</Link>
+                          <Link to={`/cafes/${activeFarm.linkedProductSlug}?from=origem&farmId=${activeFarm.id}&originFilter=${mapFilter}#mapa-origem`} className="premium-cta text-xs flex-1 text-center py-3">Ver Café</Link>
                        </div>
                     </div>
                  ) : (
@@ -398,7 +444,7 @@ export default function Origin() {
                           </div>
                           
                           <div className="flex flex-col gap-3 mt-auto">
-                             <Link to={activeFarm.linkedProductSlug ? `/cafes/${activeFarm.linkedProductSlug}` : '/cafes'} className="premium-cta w-full justify-center py-4 bg-[#c9a263] text-black">Ver café deste lote</Link>
+                             <Link to={activeFarm.linkedProductSlug ? `/cafes/${activeFarm.linkedProductSlug}?from=origem&farmId=${activeFarm.id}&originFilter=${mapFilter}#mapa-origem` : '/cafes'} className="premium-cta w-full justify-center py-4 bg-[#c9a263] text-black">Ver café deste lote</Link>
                              <div className="flex gap-3">
                                 <button onClick={() => scrollToSection('produtores')} className="premium-cta-ghost flex-1 justify-center border-transparent bg-[#1a1a1a] text-[#a3a3a3] hover:text-white py-3 text-xs">Conhecer produtor</button>
                                 <button onClick={() => scrollToSection('rastreabilidade')} className="premium-cta-ghost flex-1 justify-center border-transparent bg-[#1a1a1a] text-[#a3a3a3] hover:text-white py-3 text-xs">Ver rastreabilidade</button>
@@ -434,7 +480,7 @@ export default function Origin() {
            </div>
 
            {/* Mapa */}
-           <div className="lg:w-[55%] h-[420px] md:h-[560px] bg-[#111111] rounded-[2rem] overflow-hidden border border-[#a3a3a3]/10 relative z-0">
+           <div className="lg:w-[55%] h-[420px] md:h-[560px] bg-[#111111] rounded-[2rem] overflow-hidden border border-[#a3a3a3]/10 relative z-0 group">
              <style>{`
                 .leaflet-container { background: #0a0a0a; font-family: inherit; }
                 .custom-pin-marker:hover { transform: scale(1.15) translateY(-4px) !important; background-color: #c9a263 !important; color: #0a0a0a !important; border-color: #0a0a0a !important;}
@@ -442,10 +488,24 @@ export default function Origin() {
                 .leaflet-control-zoom a { background-color: rgba(17, 17, 17, 0.9) !important; color: #a3a3a3 !important; transition: all 0.2s !important; border: none !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important;}
                 .leaflet-control-zoom a:hover { background-color: #1a1a1a !important; color: #c9a263 !important; }
               `}</style>
+              
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none drop-shadow-xl text-center whitespace-nowrap">
+                Role para aproximar · Arraste para explorar
+              </div>
+
+              {activeFarm && (
+                <button 
+                  onClick={() => setActiveFarm(activeFarm)} 
+                  className="absolute bottom-6 left-6 z-[1000] bg-[#111111] hover:bg-[#1a1a1a] text-[#a3a3a3] hover:text-[#c9a263] px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest border border-white/10 shadow-xl transition-all"
+                >
+                  Recentralizar
+                </button>
+              )}
+
               <MapContainer 
                 center={[-18.9, -46.9]} 
                 zoom={7} 
-                scrollWheelZoom={false} 
+                scrollWheelZoom={true} 
                 className="w-full h-full"
                 zoomControl={false}
               >
@@ -472,61 +532,62 @@ export default function Origin() {
       </section>
 
       {/* 5. LISTA PRODUTORES SEÇÃO */}
-      <section id="produtores" className="py-24 px-6 max-w-7xl mx-auto border-t border-[#a3a3a3]/10 scroll-mt-24">
-        <h2 className="text-3xl md:text-5xl font-serif text-white mb-12">Produtores por trás dos lotes CofCof</h2>
-        
-        <div className="grid md:grid-cols-3 gap-8">
-           {mockOriginFarms.filter(f => f.active).slice(0,3).map(farm => (
-              <div key={farm.id} className="premium-card p-0 overflow-hidden flex flex-col relative group">
-                 {/* Fallback image strategy */}
-                 <div className="aspect-[4/3] bg-[#111111] overflow-hidden relative">
-                    {farm.producerImage || farm.image ? (
-                        <img src={farm.producerImage || farm.image} alt={farm.producer} className="w-full h-full object-cover mix-blend-lighten opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
-                    ) : (
-                        <div className="w-full h-full bg-[#160f0a] flex items-center justify-center text-[#c9a263]/20 relative overflow-hidden">
-                           <Mountain size={120} strokeWidth={1} className="absolute rotate-12 scale-150 opacity-10" />
-                           <div className="text-center relative z-10 p-6">
-                              <span className="premium-badge inline-flex mb-2">Produtor CofCof</span>
-                              <div className="text-xs uppercase tracking-widest">{farm.farmName}</div>
+      <section id="produtores" className="py-24 px-6 bg-[#fcfaf8] border-y border-[#a3a3a3]/10 scroll-mt-24">
+        <div className="max-w-7xl mx-auto">
+           <h2 className="text-3xl md:text-5xl font-serif text-[#1C1A17] mb-12">Produtores por trás dos lotes CofCof</h2>
+           
+           <div className="grid md:grid-cols-3 gap-8">
+              {mockOriginFarms.filter(f => f.active).slice(0,3).map(farm => (
+                 <div key={farm.id} className="bg-white rounded-2xl p-0 overflow-hidden flex flex-col relative group border border-[#c9a263]/20 shadow-lg">
+                    {/* Fallback image strategy */}
+                    <div className="aspect-[4/3] bg-[#f5f0eb] overflow-hidden relative">
+                       {farm.producerImage || farm.image ? (
+                           <img src={farm.producerImage || farm.image} alt={farm.producer} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
+                       ) : (
+                           <div className="w-full h-full flex items-center justify-center text-[#c9a263]/20 relative overflow-hidden">
+                              <Mountain size={120} strokeWidth={1} className="absolute rotate-12 scale-150 opacity-10" />
+                              <div className="text-center relative z-10 p-6">
+                                 <span className="premium-badge inline-flex mb-2 bg-white text-black border-[#c9a263]/20">Produtor CofCof</span>
+                                 <div className="text-xs uppercase tracking-widest text-[#1C1A17] hover:text-[#c9a263]">{farm.farmName}</div>
+                              </div>
                            </div>
-                        </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent" />
-                 </div>
-                 <div className="p-8 flex-1 flex flex-col bg-[#111111]">
-                    <div className="text-[10px] text-[#c9a263] uppercase tracking-widest font-bold mb-2">{farm.farmName}</div>
-                    <h3 className="font-serif text-2xl text-white mb-2">{farm.producer}</h3>
-                    <p className="text-xs text-[#a3a3a3] mb-6">{farm.city}, {farm.region}</p>
-                    
-                    <div className="space-y-3 mb-8 text-xs font-medium border-t border-[#a3a3a3]/10 pt-6">
-                       <div className="flex justify-between">
-                          <span className="text-[#a3a3a3]">Lote:</span>
-                          <span className="text-white max-w-[50%] text-right truncate bg-[#1a1a1a] px-2 py-0.5 rounded border border-white/5">{farm.lotName}</span>
+                       )}
+                    </div>
+                    <div className="p-8 flex-1 flex flex-col">
+                       <div className="text-[10px] text-[#c9a263] uppercase tracking-widest font-bold mb-2">{farm.farmName}</div>
+                       <h3 className="font-serif text-2xl text-[#1C1A17] mb-2">{farm.producer}</h3>
+                       <p className="text-xs text-[#a3a3a3] mb-6">{farm.city}, {farm.region}</p>
+                       
+                       <div className="space-y-3 mb-8 text-xs font-medium border-t border-[#c9a263]/10 pt-6">
+                          <div className="flex justify-between">
+                             <span className="text-[#a3a3a3]">Lote:</span>
+                             <span className="text-[#1C1A17] max-w-[50%] text-right truncate bg-[#f5f0eb] px-2 py-0.5 rounded border border-[#c9a263]/10">{farm.lotName}</span>
+                          </div>
+                          <div className="flex justify-between">
+                             <span className="text-[#a3a3a3]">SCA:</span>
+                             <span className="text-[#c9a263] font-bold">{farm.scaScore || 'TBD'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                             <span className="text-[#a3a3a3]">Processo:</span>
+                             <span className="text-[#1C1A17] truncate max-w-[60%] text-right">{farm.process}</span>
+                          </div>
+                          <div className="flex justify-between">
+                             <span className="text-[#a3a3a3] mt-1 shrink-0">Notas:</span>
+                             <span className="text-[#1C1A17] text-right break-words">{farm.sensoryNotes}</span>
+                          </div>
                        </div>
-                       <div className="flex justify-between">
-                          <span className="text-[#a3a3a3]">SCA:</span>
-                          <span className="text-[#c9a263]">{farm.scaScore || 'TBD'}</span>
-                       </div>
-                       <div className="flex justify-between">
-                          <span className="text-[#a3a3a3]">Processo:</span>
-                          <span className="text-white truncate max-w-[60%] text-right">{farm.process}</span>
-                       </div>
-                       <div className="flex justify-between">
-                          <span className="text-[#a3a3a3] mt-1 shrink-0">Notas:</span>
-                          <span className="text-white text-right break-words">{farm.sensoryNotes}</span>
+                       
+                       <div className="mt-auto grid grid-cols-2 gap-3">
+                         <Link to={farm.linkedProductSlug ? `/cafes/${farm.linkedProductSlug}` : '/cafes'} className="premium-cta w-full justify-center px-0 text-xs py-3 border-[#c9a263] bg-[#c9a263] text-black shadow-md hover:bg-[#b0874b]">Ver Café</Link>
+                         <button onClick={() => {
+                             setActiveFarm(farm);
+                             scrollToSection('mapa-origem');
+                         }} className="premium-cta-ghost w-full justify-center px-0 text-xs py-3 bg-[#f5f0eb] border-transparent text-[#1C1A17] hover:bg-[#eadecc]">Ver no mapa</button>
                        </div>
                     </div>
-                    
-                    <div className="mt-auto grid grid-cols-2 gap-3">
-                      <Link to={farm.linkedProductSlug ? `/cafes/${farm.linkedProductSlug}` : '/cafes'} className="premium-cta w-full justify-center px-0 text-xs py-3 border-transparent bg-[#c9a263] text-black">Ver Café</Link>
-                      <button onClick={() => {
-                          setActiveFarm(farm);
-                          scrollToSection('fazendas');
-                      }} className="premium-cta-ghost w-full justify-center px-0 text-xs py-3 border-transparent bg-[#1a1a1a] hover:bg-white text-[#a3a3a3]">Ver no mapa</button>
-                    </div>
                  </div>
-              </div>
-           ))}
+              ))}
+           </div>
         </div>
       </section>
 
@@ -588,7 +649,7 @@ export default function Origin() {
                Você não compra um café genérico. Você conhece o caminho dele. Do produtor ao pacote, cada lote CofCof pode carregar dados de origem, safra, torra e perfil sensorial na palma da sua mão.
              </p>
              <Link to="/cafes" className="premium-cta inline-flex items-center gap-2">
-                 Ver cafés rastreáveis <ChevronRight size={18} />
+                 Ver exemplo de rastreabilidade <ChevronRight size={18} />
              </Link>
            </div>
            
@@ -596,44 +657,47 @@ export default function Origin() {
               <div className="w-full max-w-[340px] bg-[#111111] rounded-[3rem] p-4 border-[6px] border-[#1a1a1a] shadow-2xl relative shadow-[#c9a263]/5">
                   <div className="w-32 h-6 bg-[#1a1a1a] rounded-b-xl absolute top-0 left-1/2 -translate-x-1/2 z-20" />
                   
-                  <div className="bg-[#0a0a0a] rounded-[2rem] h-[600px] overflow-y-auto no-scrollbar border border-white/5 relative bg-gradient-to-b from-[#111111] to-[#0a0a0a]">
+                  <div className="bg-[#fcfaf8] rounded-[2rem] h-[600px] overflow-y-auto no-scrollbar border border-white/5 relative bg-gradient-to-b from-[#ffffff] to-[#f5f0eb]">
                      <div className="p-6 pb-20">
                          <div className="flex justify-center mb-6 pt-6">
-                            <span className="premium-badge text-[10px] bg-[#c9a263]/10 text-[#c9a263] border-none">Origem Validada</span>
+                            <span className="premium-badge text-[10px] bg-[#c9a263]/10 text-[#c9a263] border-none font-medium">Lote Validado</span>
                          </div>
-                         <div className="text-center mb-8">
-                            <h4 className="font-serif text-3xl text-white mb-1">Alto da Serra</h4>
-                            <p className="text-xs text-[#a3a3a3]">Eliane Garcia · Cerrado Mineiro</p>
+                         <div className="text-center mb-8 border-b border-[#1C1A17]/10 pb-6">
+                            <h4 className="font-serif text-3xl text-[#1C1A17] mb-1">Cerrado Mágico</h4>
+                            <p className="text-xs text-[#a3a3a3]">Fazenda Alto da Serra · Eliane Garcia</p>
                          </div>
                          
-                         <div className="space-y-3">
-                            <div className="bg-[#111111] p-4 rounded-xl border border-white/5">
-                               <div className="text-[10px] uppercase tracking-widest text-[#a3a3a3] mb-1">Processo & SCA</div>
-                               <div className="flex justify-between items-center">
-                                  <span className="text-sm text-white font-medium">Fermentado Natural</span>
-                                  <span className="text-sm text-[#c9a263] font-bold">88.5 pt</span>
+                         <div className="space-y-4">
+                            <div className="bg-white p-4 rounded-xl border border-[#1C1A17]/5 shadow-sm">
+                               <div className="text-[10px] uppercase tracking-widest text-[#a3a3a3] mb-1">Processo</div>
+                               <div className="text-sm text-[#1C1A17] font-medium">Fermentado Natural</div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                               <div className="bg-white p-4 rounded-xl border border-[#1C1A17]/5 shadow-sm">
+                                  <div className="text-[10px] uppercase tracking-widest text-[#a3a3a3] mb-1">SCA</div>
+                                  <div className="text-sm text-[#c9a263] font-bold">88.5 pt</div>
+                               </div>
+                               <div className="bg-white p-4 rounded-xl border border-[#1C1A17]/5 shadow-sm">
+                                  <div className="text-[10px] uppercase tracking-widest text-[#a3a3a3] mb-1">Safra</div>
+                                  <div className="text-sm text-[#1C1A17] font-medium">2024</div>
                                </div>
                             </div>
-                            <div className="bg-[#111111] p-4 rounded-xl border border-white/5">
+
+                            <div className="bg-white p-4 rounded-xl border border-[#1C1A17]/5 shadow-sm">
                                <div className="text-[10px] uppercase tracking-widest text-[#a3a3a3] mb-1">Notas Sensoriais</div>
-                               <div className="text-sm text-white font-medium break-words">Melaço de cana, frutas vermelhas maduras e licor.</div>
+                               <div className="text-sm text-[#1C1A17] font-medium break-words leading-relaxed">Melaço de cana, frutas vermelhas maduras e licor.</div>
                             </div>
-                            <div className="bg-[#111111] p-4 rounded-xl border border-white/5">
-                               <div className="text-[10px] uppercase tracking-widest text-[#a3a3a3] mb-1">Altitude & Safra</div>
-                               <div className="flex justify-between items-center">
-                                  <span className="text-sm text-white font-medium">1.250m</span>
-                                  <span className="text-sm text-white font-medium">2024</span>
-                               </div>
-                            </div>
-                            <div className="bg-[#111111] p-4 rounded-xl border border-[#c9a263]/30 bg-gradient-to-r from-[#111111] to-[#c9a263]/5">
+
+                            <div className="bg-white p-4 rounded-xl border border-[#c9a263]/30 bg-gradient-to-r from-white to-[#c9a263]/5 shadow-sm">
                                <div className="text-[10px] uppercase tracking-widest text-[#a3a3a3] mb-1 flex justify-between">
                                   <span>Data da Torra</span>
                                   <span className="text-green-500 flex items-center gap-1"><CheckCircle2 size={10} /> Fresca</span>
                                </div>
-                               <div className="text-sm text-white font-medium">Hoje</div>
+                               <div className="text-sm text-[#1C1A17] font-medium">Esta semana</div>
                             </div>
                             
-                            <button className="w-full bg-[#c9a263] text-black text-xs font-bold uppercase tracking-widest py-3 mt-4 rounded-lg">Comprar Novamente</button>
+                            <button className="w-full bg-[#1C1A17] text-white text-xs font-bold uppercase tracking-widest py-4 mt-6 rounded-xl hover:bg-[#c9a263] hover:text-black transition-colors shadow-md">Comprar Novamente</button>
                          </div>
                      </div>
                   </div>
@@ -645,39 +709,59 @@ export default function Origin() {
       {/* 8. CAFÉS DISPONÍVEIS */}
       <section className="py-24 px-6 max-w-7xl mx-auto border-t border-[#a3a3a3]/10">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-serif text-white mb-6">Cafés disponíveis dessa origem</h2>
+          <h2 className="text-3xl md:text-5xl font-serif text-white mb-6">Escolha um café com origem comprovada.</h2>
           <p className="text-[#a3a3a3] text-lg max-w-2xl mx-auto font-light">Agora que você sabe de onde vem, escolha um lote rastreável do Cerrado Mineiro.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-           {mockProducts.filter(p => p.category === 'grão' && p.stock > 0).slice(0, 4).map(product => (
-              <div key={product.id} className="premium-card p-0 overflow-hidden group flex flex-col">
-                 <Link to={`/cafes/${product.slug}`} className="block relative aspect-[4/5] bg-[#111111]">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover mix-blend-lighten opacity-80 group-hover:opacity-100 transition-opacity" />
-                    {product.isAwardWinning && <span className="premium-badge absolute top-4 left-4">Lote Premiado</span>}
-                 </Link>
-                 <div className="p-6 flex-1 flex flex-col">
-                    <div className="text-[10px] text-[#c9a263] font-bold uppercase tracking-widest mb-1">{product.farm || product.region}</div>
-                    <h3 className="font-serif text-xl text-white mb-2">{product.name}</h3>
-                    
-                    <div className="flex flex-wrap gap-1 mb-4 mt-2">
-                       {product.sensoryNotes.map((note, i) => (
-                         <span key={i} className="text-[9px] uppercase font-bold tracking-widest text-[#a3a3a3] bg-[#111111] px-2 py-1 rounded border border-white/5">{note}</span>
-                       ))}
-                    </div>
-                    
-                    <div className="mt-auto pt-4 flex items-center justify-between">
-                       <span className="text-lg text-white font-medium">R$ {product.price}</span>
-                       <span className="text-xs text-[#a3a3a3]">250g</span>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-2 mt-4">
-                      <Link to={`/cafes/${product.slug}`} className="premium-cta-ghost py-2 text-xs flex justify-center border-transparent">Ver dossiê</Link>
-                      <button className="premium-cta py-2 text-xs flex justify-center bg-[#c9a263] text-black border-none">Comprar</button>
+           {mockProducts.filter(p => p.category === 'grão' && p.stock > 0).slice(0, 4).map(product => {
+              const isLinkedToActive = activeFarm?.linkedProductSlug === product.slug;
+              return (
+                 <div key={product.id} className={`premium-card p-0 overflow-hidden group flex flex-col border ${isLinkedToActive ? 'border-[#c9a263] ring-1 ring-[#c9a263]' : 'border-[#a3a3a3]/10'}`}>
+                    <Link to={`/cafes/${product.slug}`} className="block relative aspect-square bg-[#111111]">
+                       <img src={product.image} alt={product.name} className="w-full h-full object-cover mix-blend-lighten opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+                       {product.isAwardWinning && <span className="premium-badge absolute top-4 left-4">Lote Premiado</span>}
+                       {isLinkedToActive && <span className="absolute top-4 right-4 bg-[#c9a263] text-black text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded">Origem Selecionada</span>}
+                    </Link>
+                    <div className="p-6 flex-1 flex flex-col bg-[#111111]">
+                       <div className="text-[10px] text-[#c9a263] font-bold uppercase tracking-widest mb-1 truncate">{product.farm || product.region}</div>
+                       <h3 className="font-serif text-xl text-white mb-2">{product.name}</h3>
+                       
+                       <div className="flex flex-wrap gap-1 mb-4">
+                          {product.sensoryNotes.map((note, i) => (
+                            <span key={i} className="text-[9px] uppercase font-bold tracking-widest text-[#a3a3a3] bg-[#1a1a1a] px-2 py-1 rounded border border-white/5">{note}</span>
+                          ))}
+                       </div>
+                       
+                       <div className="mt-auto pt-4 flex items-center justify-between mb-4 border-t border-white/5">
+                          <span className="text-xl text-white font-medium">R$ {product.price.toFixed(2).replace('.',',')}</span>
+                          <span className="text-xs text-[#a3a3a3]">250g</span>
+                       </div>
+                       
+                       <div className="space-y-2">
+                         <div className="grid grid-cols-2 gap-2">
+                           <Link to={`/cafes/${product.slug}`} className="premium-cta-ghost py-2.5 text-xs flex justify-center border-transparent bg-[#1a1a1a] text-[#a3a3a3] hover:text-white">Ver dossiê</Link>
+                           <button className="premium-cta py-2.5 text-xs flex justify-center bg-[#c9a263] text-black border-none hover:bg-white transition-colors">Comprar</button>
+                         </div>
+                         <button 
+                            onClick={() => {
+                               const farm = mockOriginFarms.find(f => f.linkedProductSlug === product.slug);
+                               if (farm) {
+                                  setActiveFarm(farm);
+                                  scrollToSection('mapa-origem');
+                               } else {
+                                  scrollToSection('mapa-origem'); // Falback se n tiver
+                               }
+                            }} 
+                            className="w-full text-center text-[10px] uppercase font-bold tracking-widest text-[#a3a3a3] hover:text-[#c9a263] transition-colors py-2"
+                          >
+                            Ver origem no mapa
+                         </button>
+                       </div>
                     </div>
                  </div>
-              </div>
-           ))}
+              );
+           })}
         </div>
       </section>
 
@@ -701,7 +785,7 @@ export default function Origin() {
             <Link to="/assinatura" className="premium-cta-ghost w-full sm:w-auto text-center border-transparent bg-[#1a1a1a] hover:bg-white text-[#a3a3a3] hover:text-black">
                Entrar para o Clube
             </Link>
-            <button onClick={() => scrollToSection('fazendas')} className="premium-cta-ghost w-full sm:w-auto text-center border-transparent bg-transparent hover:text-white text-[#a3a3a3]">
+            <button onClick={() => scrollToSection('mapa-origem')} className="premium-cta-ghost w-full sm:w-auto text-center border-transparent bg-transparent hover:text-white text-[#a3a3a3]">
                Ver mapa da origem novamente
             </button>
           </div>

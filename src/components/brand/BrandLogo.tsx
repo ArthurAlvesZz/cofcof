@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export interface BrandLogoProps {
   size?: "nav" | "footer" | "hero" | "admin" | "sidebar" | "custom";
   compact?: boolean;
-  theme?: "dark" | "light" | "pure-white";
+  theme?: "dark" | "light" | "pure-white"; // Deprecated, kept for backward compatibility
   className?: string;
   asLink?: boolean;
   to?: string;
@@ -13,14 +13,13 @@ export interface BrandLogoProps {
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   size = "nav",
   compact = false,
-  theme = "dark",
   className = "",
   asLink = true,
   to = "/",
 }) => {
   const getStyleClasses = () => {
     const baseClasses =
-      'font-["Montserrat",sans-serif] font-[800] tracking-[0.08em] uppercase leading-none';
+      'font-["Montserrat",sans-serif] font-[800] tracking-[0.08em] uppercase leading-none text-white';
 
     switch (size) {
       case "nav":
@@ -39,20 +38,19 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     }
   };
 
-  const textColor =
-    theme === "pure-white"
-      ? "text-white"
-      : theme === "dark"
-        ? "text-[#F6F1EB]"
-        : "text-[#1C1A17]";
-  const dotColor = theme === "pure-white" ? "text-white" : "text-[#c9a263]";
+  const cleanClassName = className
+    .replace(/text-\[[^\]]+\]/g, "")
+    .replace(/text-[a-z]+-[0-9]+/g, "")
+    .replace(/text-[a-z]+/g, "")
+    .replace(/text-white/g, "")
+    .trim();
 
   const Content = (
     <span
-      className={`${getStyleClasses()} flex items-baseline ${className}`.trim()}
+      className={`${getStyleClasses()} flex items-baseline ${cleanClassName}`.trim()}
     >
-      <span className={textColor}>{compact ? "C" : "COFCOF"}</span>
-      <span className={dotColor}>.CO</span>
+      <span>{compact ? "C" : "COFCOF"}</span>
+      <span>.CO</span>
     </span>
   );
 

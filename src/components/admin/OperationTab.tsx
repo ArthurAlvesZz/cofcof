@@ -424,71 +424,24 @@ export function OperationTab() {
       {/* 1. TOPO DE COMANDO EM DUAS LINHAS */}
       <div className="bg-[#111111] text-white px-6 py-4 shadow-sm border-b border-[#c9a263]/20 flex flex-col gap-4 sticky top-0 z-40">
          {/* Linha 1 */}
-         <div className="flex items-center justify-between gap-4">
-             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#1a1a1a] rounded-[1rem] flex items-center justify-center text-[#c9a263] border border-[#c9a263]/20 shadow-sm shrink-0">
-                  <Zap size={20} className="drop-shadow-sm" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-serif text-white tracking-tight leading-tight">Central Operacional</h1>
-                  <p className="text-xs text-[#a3a3a3] font-medium hidden sm:block">Produção, estoque, torra, consignação e rastreabilidade.</p>
-                </div>
-             </div>
-             <button 
-                onClick={() => setIsOperationMenuOpen(true)}
-                className="flex items-center justify-center gap-2 bg-[#c9a263] text-[#0a0a0a] px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_15px_rgba(201,162,99,0.2)] active:scale-95 whitespace-nowrap shrink-0"
-              >
-                <Zap size={16} className="text-[#0a0a0a]" />
-                Nova Operação
-              </button>
-         </div>
-         {/* Linha 2 */}
-         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative">
-             <div className="flex items-center gap-2 bg-[#1a1a1a] px-3 py-2 rounded-xl border border-[#c9a263]/10 flex-1 min-w-0">
-                <Search size={16} className="text-[#a3a3a3] shrink-0" />
-                <input 
-                   type="text" 
-                   value={searchQuery}
-                   onChange={(e) => {
-                       setSearchQuery(e.target.value);
-                       performOperationalSearch(e.target.value);
-                   }}
-                   placeholder="Buscar lote, torra, parceiro, horas..." 
-                   className="bg-transparent border-none text-sm w-full focus:ring-0 outline-none placeholder:text-[#a3a3a3] text-white font-medium min-w-0" 
-                />
-             </div>
-             
-             {/* Search Dropdown */}
-             {isSearchOpen && (
-                 <div className="absolute top-14 left-0 w-full sm:w-[400px] bg-[#111111] border border-[#c9a263]/30 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col">
-                     {searchResults.length > 0 ? (
-                         <div className="flex flex-col max-h-[300px] overflow-y-auto hide-scrollbar">
-                             {searchResults.map((res, i) => (
-                                 <button 
-                                     key={i} 
-                                     onClick={() => {
-                                         if (res.action) handleOperationAction(res.action);
-                                         setIsSearchOpen(false);
-                                         setSearchQuery('');
-                                     }}
-                                     className="flex items-start gap-3 p-4 hover:bg-[#1a1a1a] border-b border-[#a3a3a3]/10 text-left transition-colors last:border-0"
-                                     disabled={!res.action}
-                                 >
-                                     <div className="w-8 h-8 rounded-lg bg-[#c9a263]/10 flex items-center justify-center shrink-0">
-                                         <Search size={14} className="text-[#c9a263]" />
-                                     </div>
-                                     <div className="flex-1">
-                                         <p className="text-sm font-bold text-white">{res.title}</p>
-                                         <p className="text-xs text-[#a3a3a3]">{res.description}</p>
-                                     </div>
-                                 </button>
-                             ))}
-                         </div>
-                     ) : null}
+         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+             <div className="flex flex-1 items-center gap-4 min-w-0">
+                 {/* Search */}
+                 <div className="flex items-center gap-2 bg-[#1a1a1a] px-3 py-2.5 rounded-xl border border-[#c9a263]/10 max-w-sm w-full">
+                    <Search size={16} className="text-[#a3a3a3] shrink-0" />
+                    <input 
+                       type="text" 
+                       value={searchQuery}
+                       onChange={(e) => {
+                           setSearchQuery(e.target.value);
+                           performOperationalSearch(e.target.value);
+                       }}
+                       placeholder="Buscar lote, torra, parceiro..." 
+                       className="bg-transparent border-none text-sm w-full focus:ring-0 outline-none placeholder:text-[#a3a3a3] text-white font-medium min-w-0" 
+                    />
                  </div>
-             )}
-
-             <div className="flex items-center gap-2 shrink-0 overflow-x-auto hide-scrollbar">
+                 
+                 {/* Period */}
                  <div className="flex items-center gap-1 shrink-0 overflow-x-auto hide-scrollbar bg-[#1a1a1a] p-1 rounded-xl border border-[#c9a263]/10">
                      {[
                          { id: 'today', label: 'Hoje' },
@@ -505,36 +458,46 @@ export function OperationTab() {
                          </button>
                      ))}
                  </div>
-                 {loading && <div className="flex items-center bg-[#1a1a1a] px-2 py-1 rounded-xl border border-[#c9a263]/10"><RefreshCcw size={14} className="animate-spin text-[#c9a263]" /></div>}
-                 <div className="w-px h-6 bg-[#a3a3a3]/20 hidden sm:block"></div>
-                 <div className="flex gap-1 overflow-x-auto hide-scrollbar">
-                     {[
-                         { id: 'cockpit', label: 'Cockpit' },
-                         { id: 'diario', label: 'Diário' },
-                         { id: 'lancamentos', label: 'Lançamentos' },
-                         { id: 'estoque', label: 'Estoque' },
-                         { id: 'consignacoes', label: 'Consignações' },
-                         { id: 'financeiro', label: 'Financeiro' },
-                         { id: 'horas', label: 'Horas' },
-                         { id: 'auditoria', label: 'Auditoria' }
-                     ].map(m => (
-                         <button 
-                             key={m.id} 
-                             onClick={() => setMode(m.id as OperationMode)} 
-                             className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest border rounded-xl transition-all shadow-sm shrink-0 whitespace-nowrap ${mode === m.id ? 'text-[#0a0a0a] bg-[#c9a263] border-[#c9a263] border-2 -my-[1px]' : 'text-[#a3a3a3] hover:text-white border border-[#c9a263]/10 bg-[#1a1a1a]'}`}
-                         >
-                             {m.label}
-                         </button>
-                     ))}
-                 </div>
+                 {loading && <div className="flex items-center"><RefreshCcw size={14} className="animate-spin text-[#c9a263]" /></div>}
              </div>
+
+             <button 
+                onClick={() => setIsOperationMenuOpen(true)}
+                className="flex items-center justify-center gap-2 bg-[#c9a263] text-[#0a0a0a] px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_15px_rgba(201,162,99,0.2)] active:scale-95 whitespace-nowrap shrink-0"
+              >
+                <Zap size={16} className="text-[#0a0a0a]" />
+                Criar lançamento
+              </button>
+         </div>
+
+         {/* Linha 2 - Tabs */}
+         <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pt-2 border-t border-white/5">
+             {[
+                 { id: 'cockpit', label: 'Cockpit' },
+                 { id: 'diario', label: 'Diário do dia' },
+                 { id: 'lancamentos', label: 'Lançar movimentação' },
+                 { id: 'estoque', label: 'Estoque' },
+                 { id: 'consignacoes', label: 'Consignações' },
+                 { id: 'financeiro', label: 'Custos e margens' },
+                 { id: 'horas', label: 'Horas do mestre' },
+                 { id: 'auditoria', label: 'Auditoria' }
+             ].map(m => (
+                 <button 
+                     key={m.id} 
+                     onClick={() => setMode(m.id as OperationMode)} 
+                     className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-lg transition-all shadow-sm shrink-0 whitespace-nowrap ${mode === m.id ? 'text-[#0a0a0a] bg-[#c9a263] border-transparent' : 'text-[#a3a3a3] hover:text-white border border-transparent hover:bg-[#1a1a1a]'}`}
+                 >
+                     {m.label}
+                 </button>
+             ))}
          </div>
       </div>
 
       <div className="p-4 md:p-8 w-full max-w-[1440px] mx-auto min-w-0">
          {/* GRID PRINCIPAL */}
          {mode === 'cockpit' ? (
-             <OperationCockpit onNavigate={(dest) => {
+          <div className="flex flex-col gap-6 items-start w-full">
+            <OperationCockpit onNavigate={(dest) => {
                  if (['estoque', 'consignacoes', 'financeiro', 'auditoria', 'horas', 'diario', 'lancamentos'].includes(dest)) {
                      setMode(dest as OperationMode);
                  } else if (dest === 'lot' || dest === 'stock') {
@@ -560,296 +523,24 @@ export function OperationTab() {
                      }
                  }
              }} />
-         ) : (
-         <div className="flex flex-col gap-6 items-start w-full">
             
-            {/* NOVEL: STATUS GERAL E PRÓXIMA AÇÃO NA MESMA LINHA/FAIXAS */}
-            <div className="grid grid-cols-1 lg:grid-cols bg-[#111111] rounded-[24px] shadow-xl overflow-hidden relative border border-[#c9a263]/20 w-full mb-2">
-                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#c9a263]/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                 
-                 <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10 w-full">
-                     <div className="flex items-start gap-4">
-                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${
-                             (stats?.criticalAlertsCount + stats?.overdueConsignmentsCount > 0) 
-                             ? 'bg-red-900/20 text-red-400 border-red-500/20' 
-                             : 'bg-[#c9a263]/10 text-[#c9a263] border-[#c9a263]/20'
-                         }`}>
-                             {(stats?.criticalAlertsCount + stats?.overdueConsignmentsCount > 0) ? <AlertTriangle size={28} strokeWidth={1.5} /> : <CheckCircle2 size={28} strokeWidth={1.5} />}
-                         </div>
-                         <div>
-                             <h2 className="text-2xl font-serif text-white leading-tight">
-                               {(stats?.criticalAlertsCount + stats?.overdueConsignmentsCount > 0) ? `${stats?.criticalAlertsCount + stats?.overdueConsignmentsCount} Pendências Críticas` : 'Tudo certo'}
-                             </h2>
-                             <p className="text-[#a3a3a3] text-sm mt-1">
-                               {(stats?.criticalAlertsCount + stats?.overdueConsignmentsCount > 0) ? 'Existem inconsistências que precisam da sua atenção.' : `Operação saudável no período de ${getPeriodLabel().toLowerCase()}.`}
-                             </p>
-                         </div>
-                     </div>
-                     
-                     <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
-                         {(stats?.criticalAlertsCount + stats?.overdueConsignmentsCount > 0) ? (
-                            <button onClick={() => setInsightModal({ isOpen: true, type: 'alerts' })} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95 w-full sm:w-auto text-center flex items-center justify-center gap-2">
-                                Abrir plano de correção
-                            </button>
-                         ) : (
-                            <button onClick={() => setMode('diario')} className="bg-[#1a1a1a] hover:bg-[#222] border border-[#a3a3a3]/20 text-[#a3a3a3] hover:text-[#c9a263] px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-sm active:scale-95 w-full sm:w-auto text-center">
-                                Ver Status
-                            </button>
-                         )}
-                     </div>
-                 </div>
-            </div>
-
-            {/* 4 CARDS PRINCIPAIS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-                  {/* Card 1: Café Cru */}
-                  <div onClick={() => (stats?.rawKgAvailable > 0) ? setInsightModal({ isOpen: true, type: 'raw_stock' }) : handleOperationAction('launch_lot')} className="group relative bg-[#fcfaf8] p-6 rounded-[24px] shadow-sm border border-[#a3a3a3]/10 overflow-hidden cursor-pointer hover:shadow-lg hover:border-[#c9a263]/30 transition-all min-h-[160px] flex flex-col justify-between">
-                     <div className="flex items-start justify-between mb-2">
-                        <span className="text-[11px] font-bold text-[#a3a3a3] uppercase tracking-widest leading-tight">Café Cru<br/>Disponível</span>
-                        <Target size={16} className="text-[#a3a3a3] group-hover:text-[#c9a263] transition-colors" />
-                     </div>
-                     <div>
-                        <p className="text-4xl font-serif text-[#0a0a0a]">{stats?.rawKgAvailable || 0}<span className="text-base font-bold text-[#a3a3a3] ml-1">kg</span></p>
-                        {stats?.rawKgAvailable > 0 ? (
-                            <div className="flex items-center justify-between mt-3">
-                                <span className="text-[11px] font-bold text-[#a3a3a3]">{stats?.activeLotsCount || 0} lotes ativos</span>
-                                <span className="text-[11px] font-bold text-[#c9a263]">R$ {stats?.averageRawCostPerKg?.toFixed(2) || '0.00'}/kg</span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-between mt-3">
-                                                          <span className="text-[10px] font-bold uppercase text-[#c9a263] flex items-center gap-1 group-hover:translate-x-1 transition-transform">Lançar lote cru <ChevronRight size={12}/></span>
-                             </div>
-                         )}
-                     </div>
-                  </div>
-
-                  {/* Card 2: Produção */}
-                  <div onClick={() => (stats?.roastedKgInPeriod > 0) ? setInsightModal({ isOpen: true, type: 'roasted' }) : handleOperationAction('register_roast')} className="group relative bg-[#fcfaf8] p-6 rounded-[24px] shadow-sm border border-[#a3a3a3]/10 overflow-hidden cursor-pointer hover:shadow-lg hover:border-[#c9a263]/30 transition-all min-h-[160px] flex flex-col justify-between">
-                     <div className="flex items-start justify-between mb-2">
-                        <span className="text-[11px] font-bold text-[#a3a3a3] uppercase tracking-widest leading-tight">Produção<br/>(Período)</span>
-                        <Flame size={16} className="text-[#a3a3a3] group-hover:text-[#c9a263] transition-colors" />
-                     </div>
-                     <div>
-                        <p className="text-4xl font-serif text-[#0a0a0a]">{stats?.roastedKgInPeriod || 0}<span className="text-base font-bold text-[#a3a3a3] ml-1">kg</span></p>
-                        {stats?.roastedKgInPeriod > 0 ? (
-                            <div className="flex items-center justify-between mt-3">
-                                <span className="text-[11px] font-bold text-[#a3a3a3]">{stats?.packagedUnitsInPeriod || 0} pacotes</span>
-                                <span className="text-[11px] font-bold text-[#c9a263]">Perda: {stats?.averageRoastLossPercent?.toFixed(1) || 0}%</span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-between mt-3">
-                                <span className="text-[11px] font-bold text-[#a3a3a3]">Nenhuma torra</span>
-                                <span className="text-[10px] font-bold uppercase text-[#c9a263] flex items-center gap-1 group-hover:translate-x-1 transition-transform">Registrar torra <ChevronRight size={12}/></span>
-                            </div>
-                        )}
-                     </div>
-                  </div>
-
-                  {/* Card 3: Estoque Pronto */}
-                  <div onClick={() => (stats?.finishedStockUnits > 0) ? setInsightModal({ isOpen: true, type: 'finished_stock' }) : handleOperationAction('package_coffee')} className="group relative bg-[#fcfaf8] p-6 rounded-[24px] shadow-sm border border-[#a3a3a3]/10 overflow-hidden cursor-pointer hover:shadow-lg hover:border-[#c9a263]/30 transition-all min-h-[160px] flex flex-col justify-between">
-                     <div className="flex items-start justify-between mb-2">
-                        <span className="text-[11px] font-bold text-[#a3a3a3] uppercase tracking-widest leading-tight">Estoque<br/>Pronto</span>
-                        <Layers size={16} className="text-[#a3a3a3] group-hover:text-[#c9a263] transition-colors" />
-                     </div>
-                     <div>
-                        <p className="text-4xl font-serif text-[#0a0a0a]">{stats?.finishedStockUnits || 0}<span className="text-base font-bold text-[#a3a3a3] ml-1">un</span></p>
-                        {stats?.finishedStockUnits > 0 ? (
-                            <div className="flex items-center justify-between mt-3">
-                                <span className="text-[11px] font-bold text-[#a3a3a3]">200g: {stats?.finishedStockByFormat?.['200g'] || 0}</span>
-                                <span className="text-[11px] font-bold text-[#a3a3a3]">1kg: {stats?.finishedStockByFormat?.['1kg'] || 0}</span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-between mt-3">
-                                <span className="text-[11px] font-bold text-[#a3a3a3]">Estoque zerado</span>
-                                <span className="text-[10px] font-bold uppercase text-[#c9a263] flex items-center gap-1 group-hover:translate-x-1 transition-transform">Empacotar <ChevronRight size={12}/></span>
-                            </div>
-                        )}
-                     </div>
-                  </div>
-
-                  {/* Card 4: Pendências */}
-                  <div onClick={() => handleOperationAction('view_alerts')} className={`group relative p-6 rounded-[24px] shadow-sm border overflow-hidden cursor-pointer hover:shadow-md transition-all min-h-[160px] flex flex-col justify-between ${(stats?.criticalAlertsCount + stats?.overdueConsignmentsCount > 0) ? 'bg-[#fff5f5] border-red-200' : 'bg-[#fcfaf8] border-[#a3a3a3]/10 hover:border-[#c9a263]/30'}`}>
-                     <div className="flex items-start justify-between mb-2">
-                        <span className={`text-[11px] font-bold uppercase tracking-widest leading-tight ${(stats?.criticalAlertsCount + stats?.overdueConsignmentsCount > 0) ? 'text-red-500' : 'text-[#a3a3a3]'}`}>Alerta<br/>Operacional</span>
-                        <AlertTriangle size={16} className={(stats?.criticalAlertsCount + stats?.overdueConsignmentsCount > 0) ? 'text-red-500' : 'text-[#a3a3a3]'} />
-                     </div>
-                     <div>
-                        <p className={`text-4xl font-serif ${(stats?.criticalAlertsCount + stats?.overdueConsignmentsCount > 0) ? 'text-red-600' : 'text-[#0a0a0a]'}`}>{stats?.criticalAlertsCount + stats?.overdueConsignmentsCount || 0}</p>
-                        {(stats?.criticalAlertsCount + stats?.overdueConsignmentsCount) > 0 ? (
-                            <div className="flex items-center justify-between mt-3">
-                                <span className={`text-[11px] font-bold ${(stats?.overdueConsignmentsCount > 0) ? 'text-red-600' : 'text-[#a3a3a3]'}`}>{stats?.overdueConsignmentsCount || 0} atrasos</span>
-                                <span className="text-[10px] font-bold uppercase text-red-500 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Ver pendências <ChevronRight size={12}/></span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-between mt-3">
-                                <span className="text-[11px] font-bold text-[#a3a3a3]">Tudo em ordem</span>
-                                <span className="text-[10px] font-bold uppercase text-[#a3a3a3]">✓ Normal</span>
-                            </div>
-                        )}
-                     </div>
-                  </div>
-            </div>
-
-            {/* PRÓXIMA AÇÃO RECOMENDADA */}
-            <div className="w-full relative rounded-[24px] border border-[#c9a263] bg-[#0a0a0a] shadow-[0_10px_30px_rgba(201,162,99,0.1)] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-[0_10px_40px_rgba(201,162,99,0.15)] transition-shadow">
-               <div className="absolute top-0 right-0 w-[400px] h-full overflow-hidden rounded-r-[24px] pointer-events-none opacity-20">
-                    <div className="absolute top-1/2 right-[-50px] w-64 h-64 bg-[#c9a263] rounded-full blur-[100px] -translate-y-1/2"></div>
-               </div>
-               
-               <div className="flex items-start gap-4 relative z-10 w-full">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border bg-[#111111] text-[#c9a263] border-[#c9a263]/20">
-                        <Zap size={24} strokeWidth={1.5} />
-                    </div>
-                    <div>
-                        <h3 className="text-[11px] font-bold text-[#c9a263] uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                             Próxima Ação Recomendada
-                        </h3>
-                        <h2 className="text-xl md:text-2xl font-serif text-white leading-tight mb-2">
-                            {(stats?.issues && stats.issues.length > 0) 
-                              ? stats.issues[0].title 
-                              : (stats?.activeLotsCount === 0 
-                                  ? 'Lançar lote para liberar produção' 
-                                  : 'Registrar torra para alimentar o estoque')}
-                        </h2>
-                        <p className="text-[#a3a3a3] text-sm">
-                            {(stats?.issues && stats.issues.length > 0) 
-                              ? stats.issues[0].description 
-                              : (stats?.activeLotsCount === 0 
-                                  ? 'Você não possui café cru ativo. Lance um lote agora para liberar empacotamento e torra.' 
-                                  : 'O fluxo operacional está livre, mantenha a esteira em movimento registrando as próximas torras.')}
-                        </p>
-                    </div>
-               </div>
-               
-               <div className="shrink-0 relative z-10">
-                   <button 
-                     onClick={() => {
-                        if (stats?.issues && stats.issues.length > 0 && stats.issues[0].actionType) {
-                            handleOperationAction(stats.issues[0].actionType);
-                        } else if (stats?.activeLotsCount === 0) {
-                            handleOperationAction('launch_lot');
-                        } else {
-                            handleOperationAction('register_roast');
-                        }
-                     }} 
-                     className="bg-[#c9a263] hover:bg-white text-[#0a0a0a] px-8 py-3.5 rounded-xl font-bold text-[11px] uppercase tracking-[0.15em] transition-all shadow-[0_0_20px_rgba(201,162,99,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] active:scale-95 w-full sm:w-auto text-center flex items-center justify-center gap-2"
-                   >
-                       {(stats?.issues && stats.issues.length > 0) ? 'Resolver Agora' : (stats?.activeLotsCount === 0 ? 'Lançar Lote' : 'Registrar Torra')}
-                       <ArrowRight size={16} />
-                   </button>
-               </div>
-            </div>
-
-            {/* INDICADORES SECUNDÁRIOS */}
-            <div className="flex items-center gap-3 overflow-x-auto hide-scrollbar pb-1 w-full snap-x">
-                  {[
-                      { label: 'Custo Médio/kg', val: `R$ ${stats?.averageRawCostPerKg?.toFixed(2) || '0.00'}` },
-                      { label: 'Lotes Lançados', val: `${stats?.rawLotsLaunchedInPeriod || 0}` },
-                      { label: 'Em Consignação', val: `R$ ${stats?.pendingConsignmentValue?.toLocaleString('pt-BR') || 0}` },
-                      { label: 'Horas Reg.', val: `${stats?.roasterHoursInPeriod || 0}h` },
-                      { label: 'Clientes Novos', val: `${stats?.newCustomersCount || 0}` },
-                      { label: 'A Receber', val: `R$ ${stats?.totalPendingValue?.toLocaleString('pt-BR') || 0}` },
-                  ].map((ind, i) => (
-                      <div key={i} className="bg-white border border-[#a3a3a3]/10 rounded-[16px] px-5 py-4 flex flex-col justify-center min-w-[140px] shrink-0 shadow-[0_4px_20px_rgba(0,0,0,0.02)] snap-start h-[100px]">
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-[#a3a3a3] mb-1">{ind.label}</span>
-                          <span className="text-xl font-serif text-[#0a0a0a]">{ind.val}</span>
-                      </div>
-                  ))}
-               </div>
-
-               {/* TIMELINE E AÇÕES RÁPIDAS */}
-               <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-6 w-full">
-                   
-                   {/* TIMELINE - LINHA DE PRODUÇÃO */}
-                   <div className="bg-white border border-[#a3a3a3]/10 rounded-[24px] p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] relative overflow-hidden w-full">
-                       <h3 className="text-xl font-serif text-[#0a0a0a] mb-6">Linha de Produção & Rastreabilidade</h3>
-                       <div className="relative">
-                           {/* Connection Line Desktop */}
-                           <div className="hidden lg:block absolute top-[28px] left-8 right-8 h-px bg-[#c9a263]/20 z-0"></div>
-                           
-                           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 lg:gap-2 relative z-10 w-full min-w-0">
-                               {[
-                                   { title: 'Compra', val: `${stats?.rawLotsLaunchedInPeriod || 0} lotes`, desc: stats?.lastLotName ? `Último: ${stats.lastLotName.substring(0, 10)}${stats.lastLotName.length > 10 ? '...' : ''}` : 'Nenhum recente', action: 'novo', onClick: () => handleOperationAction('launch_lot'), icon: Target },
-                                   { title: 'Café Cru', val: `${stats?.rawKgAvailable || 0}kg`, desc: `${stats?.activeLotsCount || 0} lotes ativos`, action: 'torrar', onClick: () => handleOperationAction('view_raw_stock'), icon: Layers },
-                                   { title: 'Torra', val: `${stats?.roastedKgInPeriod || 0}kg`, desc: `Perda ${stats?.averageRoastLossPercent?.toFixed(1) || 0}%`, action: 'empacotar', onClick: () => handleOperationAction('register_roast'), icon: Flame },
-                                   { title: 'Pacotes', val: `${stats?.packagedUnitsInPeriod || 0} pct`, desc: Object.keys(stats?.packagedByFormat || {}).length > 0 ? Object.keys(stats?.packagedByFormat).join(', ') : 'Sem pacotes', action: 'ver', onClick: () => handleOperationAction('package_coffee'), icon: Package },
-                                   { title: 'Estoque', val: `${stats?.finishedStockUnits || 0} un`, desc: stats?.finishedStockUnits > 0 ? 'Disponível' : 'Zerado', action: 'ajustar', onClick: () => handleOperationAction('view_stock'), icon: Layers },
-                                   { title: 'Consig.', val: `${stats?.consignedUnits || 0} fora`, desc: `R$ ${stats?.pendingConsignmentValue?.toLocaleString('pt-BR') || '0,00'}`, action: 'cobrar', onClick: () => handleOperationAction('create_consignment'), icon: Handshake },
-                                   { title: 'Fechamento', val: `R$ ${stats?.totalPendingValue?.toLocaleString('pt-BR') || '0,00'}`, desc: 'Pendente', action: 'finanças', onClick: () => handleOperationAction('view_financial'), icon: Zap },
-                               ].map((step, i) => (
-                                   <div key={i} className="group bg-white lg:bg-transparent p-4 lg:p-0 rounded-2xl border border-[#a3a3a3]/10 lg:border-none shadow-sm lg:shadow-none flex flex-row lg:flex-col items-center lg:text-center gap-4 lg:gap-3 hover:-translate-y-1 transition-transform cursor-pointer min-w-0" onClick={step.onClick}>
-                                       <div className="w-14 h-14 bg-[#111111] border border-[#c9a263]/20 rounded-[16px] flex items-center justify-center text-[#c9a263] group-hover:bg-[#c9a263] group-hover:text-[#111111] transition-colors shadow-sm shrink-0">
-                                           <step.icon size={24} strokeWidth={1.5} />
-                                       </div>
-                                       <div className="flex-1 lg:flex-none min-w-0 flex flex-col justify-center items-start lg:items-center w-full">
-                                           <p className="text-[10px] font-bold uppercase tracking-widest text-[#a3a3a3] mb-1">{step.title}</p>
-                                           <p className="text-lg font-serif text-[#0a0a0a] leading-tight mb-0.5 truncate max-w-full">{step.val}</p>
-                                           <p className="text-[10px] font-bold text-[#a3a3a3] truncate max-w-full">{step.desc}</p>
-                                       </div>
-                                   </div>
-                               ))}
-                           </div>
-                       </div>
-                   </div>
-
-                   {/* AÇÕES RÁPIDAS - VERTICAL */}
-                   <div className="bg-[#111111] border border-[#a3a3a3]/20 rounded-[24px] p-6 shadow-xl w-full flex flex-col justify-center">
-                       <h2 className="text-[12px] font-bold uppercase tracking-widest text-white mb-2">Ações Rápidas</h2>
-                       <p className="text-[11px] font-medium text-[#a3a3a3] mb-6">Atalhos guiados.</p>
-                       
-                       <div className="flex flex-col gap-2">
-                           {[
-                               { id: 'launch_lot', label: 'Registrar Lote', status: 'Disponível', icon: Target, isBlocked: false },
-                               { id: 'register_roast', label: 'Registrar Torra', status: (stats?.activeLotsCount || 0) === 0 && (stats?.rawKgAvailable || 0) === 0 ? 'Bloqueado (S/ Cru)' : 'Disponível', icon: Flame, isBlocked: (stats?.activeLotsCount || 0) === 0 && (stats?.rawKgAvailable || 0) === 0 },
-                               { id: 'package_coffee', label: 'Empacotar Café', status: (stats?.roastedKgAvailable || 0) <= 0 ? 'Bloqueado (S/ Torra)' : 'Disponível', icon: Package, isBlocked: (stats?.roastedKgAvailable || 0) <= 0 },
-                               { id: 'create_consignment', label: 'Nova Consignação', status: (stats?.finishedStockUnits || 0) <= 0 ? 'Bloqueado (S/ Estoque)' : 'Disponível', icon: Handshake, isBlocked: (stats?.finishedStockUnits || 0) <= 0 },
-                               { id: 'settle_consignment', label: 'Acertar Consignação', status: 'Disponível', icon: AlertTriangle, isBlocked: false },
-                               { id: 'launch_hours', label: 'Lançar Horas', status: 'Disponível', icon: Clock, isBlocked: false },
-                           ].map(action => (
-                               <button
-                                   key={action.id}
-                                   onClick={() => handleOperationAction(action.id)}
-                                   className={`flex items-center justify-between p-3 rounded-[12px] border transition-all shadow-sm w-full group ${action.isBlocked ? 'border-[#a3a3a3]/10 bg-[#1a1a1a] opacity-70 cursor-not-allowed' : 'border-[#c9a263]/20 bg-[#171717] hover:bg-[#c9a263]/10 hover:border-[#c9a263]'}`}
-                                   title={action.isBlocked ? 'Exige etapa anterior' : action.label}
-                               >
-                                   <div className="flex items-center gap-3 overflow-hidden">
-                                       <action.icon size={16} strokeWidth={2} className={`shrink-0 ${action.isBlocked ? 'text-[#a3a3a3]' : 'text-[#c9a263]'}`} />
-                                       <span className={`text-[11px] font-bold uppercase tracking-widest truncate ${action.isBlocked ? 'text-[#a3a3a3]' : 'text-white'}`}>
-                                           {action.label}
-                                       </span>
-                                   </div>
-                                   <div className="shrink-0 flex items-center">
-                                       {action.isBlocked ? (
-                                           <span className="text-[9px] font-bold uppercase tracking-widest text-[#a3a3a3]">Bloqueado</span>
-                                       ) : (
-                                           <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
-                                       )}
-                                   </div>
-                               </button>
-                           ))}
-                       </div>
-                   </div>
-               </div>
-
-               {/* CENTRO DE CONFERÊNCIA */}
-               <div className="bg-white rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-[#a3a3a3]/10 overflow-hidden flex flex-col min-h-[600px] min-w-0 w-full mt-6">
-                   <div className="flex-1 p-6 relative bg-white min-w-0 w-full overflow-hidden">
-                      <AnimatePresence mode="wait">
-                        <motion.div key={mode} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="h-full">
-                          <Suspense fallback={<div className="p-12 flex items-center justify-center"><RefreshCcw className="animate-spin text-[#c9a263]" /></div>}>
-                            {mode === 'diario' && <DailyOverview dates={dates} stats={stats} onAction={handleOperationAction} />}
-                            {mode === 'lancamentos' && <ProductionFlow stats={stats} onAction={handleOperationAction} />}
-                            {mode === 'estoque' && <StockOverview onAction={handleOperationAction} />}
-                            {mode === 'consignacoes' && <ConsignmentsOverview onAction={handleOperationAction} />}
-                            {mode === 'financeiro' && <FinancialOverview stats={stats} onAction={handleOperationAction} />}
-                            {mode === 'horas' && <RoasterHoursControl onAction={handleOperationAction} />}
-                            {mode === 'auditoria' && <AuditTrailOverview />}
-                          </Suspense>
-                        </motion.div>
-                      </AnimatePresence>
-                   </div>
-               </div>
           </div>
+         ) : (
+               <div className="flex-1 relative min-w-0 w-full overflow-hidden">
+                  <AnimatePresence mode="wait">
+                    <motion.div key={mode} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="h-full">
+                      <Suspense fallback={<div className="p-12 flex items-center justify-center"><RefreshCcw className="animate-spin text-[#c9a263]" /></div>}>
+                        {mode === 'diario' && <DailyOverview dates={dates} stats={stats} onAction={handleOperationAction} />}
+                        {mode === 'lancamentos' && <ProductionFlow stats={stats} onAction={handleOperationAction} />}
+                        {mode === 'estoque' && <StockOverview onAction={handleOperationAction} />}
+                        {mode === 'consignacoes' && <ConsignmentsOverview onAction={handleOperationAction} />}
+                        {mode === 'financeiro' && <FinancialOverview stats={stats} onAction={handleOperationAction} />}
+                        {mode === 'horas' && <RoasterHoursControl onAction={handleOperationAction} />}
+                        {mode === 'auditoria' && <AuditTrailOverview />}
+                      </Suspense>
+                    </motion.div>
+                  </AnimatePresence>
+               </div>
          )}
       </div>
 

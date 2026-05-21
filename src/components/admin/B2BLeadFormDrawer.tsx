@@ -13,7 +13,7 @@ import {
   Hash,
   Scale
 } from 'lucide-react';
-import { AdminPopup } from './ui/AdminPopup';
+import { AdminDrawer } from './AdminDrawer';
 import { AdminFormSection } from './ui/AdminFormSection';
 import { B2BLead } from '../../types/admin';
 import toast from 'react-hot-toast';
@@ -93,10 +93,10 @@ export function B2BLeadFormDrawer({ lead, isOpen, onClose, onSave }: B2BLeadForm
   };
 
   return (
-    <AdminPopup
+    <AdminDrawer
       isOpen={isOpen}
       onClose={onClose}
-      size="premium"
+      width="lg"
       title={lead ? "Editar Lead B2B" : "Novo Lead Corporativo"}
       subtitle="Cadastre uma nova empresa para prospecção de assinaturas e vendas B2B."
       footer={
@@ -318,6 +318,6 @@ export function B2BLeadFormDrawer({ lead, isOpen, onClose, onSave }: B2BLeadForm
            </div>
         </div>
       </div>
-    </AdminPopup>
+    </AdminDrawer>
   );
 }

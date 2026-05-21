@@ -14,7 +14,7 @@ import {
   FileSearch,
   PackageSearch
 } from 'lucide-react';
-import { AdminPopup } from './ui/AdminPopup';
+import { AdminDrawer } from './AdminDrawer';
 import { AdminFormSection } from './ui/AdminFormSection';
 import { Consignment } from '../../types/admin';
 import toast from 'react-hot-toast';
@@ -82,10 +82,10 @@ export function ConsignmentFormDrawer({ isOpen, onClose, onSave, consignment }: 
   };
 
   return (
-    <AdminPopup
+    <AdminDrawer
       isOpen={isOpen}
       onClose={onClose}
-      size="premium"
+      width="lg"
       title={consignment ? "Editar Consignação" : "Nova Consignação PDV"}
       subtitle="Controle envios de lotes, prazos de acertos e parcerias em consignação."
       footer={
@@ -272,6 +272,6 @@ export function ConsignmentFormDrawer({ isOpen, onClose, onSave, consignment }: 
            </div>
         </div>
       </div>
-    </AdminPopup>
+    </AdminDrawer>
   );
 }

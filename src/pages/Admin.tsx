@@ -256,7 +256,6 @@ export default function Admin() {
               size="admin"
               className=""
               asLink={false}
-              theme="pure-white"
             />
           </h2>
           <button
@@ -376,9 +375,7 @@ export default function Admin() {
   };
 
   return (
-    <div
-      className={`flex flex-col md:flex-row min-h-screen bg-[#fcfaf8] bg-gradient-to-br from-[#fcfaf8] to-[#f5f0eb] font-sans w-full relative`}
-    >
+    <div className="flex min-h-screen bg-[#fcfaf8] bg-gradient-to-br from-[#fcfaf8] to-[#f5f0eb] font-sans w-full relative">
       {/* Mobile Drawer Overlay */}
       {isMobileMenuOpen && (
         <div
@@ -389,8 +386,12 @@ export default function Admin() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed md:sticky top-0 h-screen bg-[#13110F] text-[#a3a3a3] border-r border-[#c9a263]/10 ${isSidebarCollapsed ? "w-[80px]" : "w-[260px]"} shrink-0 flex flex-col self-start z-50 transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+        className={`fixed inset-y-0 left-0 h-[100dvh] bg-[#13110F] text-[#a3a3a3] border-r border-[#c9a263]/10 z-50 flex flex-col transform transition-all duration-300 ease-in-out
+          ${isSidebarCollapsed ? "w-[80px]" : "w-[260px]"}
+          ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        `}
       >
+        {/* Sidebar Header */}
         <div
           className={`p-6 flex ${isSidebarCollapsed ? "justify-center" : "justify-between"} items-center shrink-0`}
         >
@@ -403,7 +404,6 @@ export default function Admin() {
               compact={isSidebarCollapsed}
               className=""
               asLink={false}
-              theme="pure-white"
             />
             {!isSidebarCollapsed && (
               <span className="text-[10px] text-[#a3a3a3] font-medium tracking-widest uppercase mt-0.5">
@@ -421,6 +421,7 @@ export default function Admin() {
           )}
         </div>
 
+        {/* Sidebar Search */}
         {!isSidebarCollapsed && (
           <div className="px-4 pb-4 shrink-0 border-b border-[#a3a3a3]/10 mb-2">
             <div className="bg-[#1a1a1a] border border-[#a3a3a3]/10 rounded-xl flex items-center px-3 py-2 gap-2">
@@ -436,6 +437,7 @@ export default function Admin() {
           </div>
         )}
 
+        {/* Sidebar Nav */}
         <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto hide-scrollbar">
           {filteredGroups.map((group, idx) => {
             return (
@@ -494,6 +496,7 @@ export default function Admin() {
           })}
         </nav>
 
+        {/* Sidebar Footer */}
         <div
           className={`relative p-4 border-t border-[#c9a263]/10 shrink-0 flex flex-col gap-3 transition-all ${isSidebarCollapsed ? "items-center" : ""} bg-[#0a0a0a]`}
         >
@@ -550,7 +553,11 @@ export default function Admin() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 min-w-0 w-full overflow-x-hidden flex flex-col min-h-screen relative">
+      <main
+        className={`flex-1 min-w-0 w-full overflow-x-hidden flex flex-col min-h-screen relative transition-all duration-300 ease-in-out
+          ${isSidebarCollapsed ? "md:ml-[80px]" : "md:ml-[260px]"}
+        `}
+      >
         {renderContent()}
       </main>
     </div>

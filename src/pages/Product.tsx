@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { mockProducts } from '../data/seed';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { mockProducts, mockOriginFarms } from '../data/seed';
 import { useCartStore } from '../store/cartStore';
-import { ShoppingBag, MapPin, ChevronRight, CheckCircle2, Star, Sprout, ShieldCheck, Coffee } from 'lucide-react';
+import { ShoppingBag, MapPin, ChevronRight, CheckCircle2, Star, Sprout, ShieldCheck, Coffee, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const FAQItem = ({ question, answer }: { question: string, answer: React.ReactNode }) => {
@@ -29,6 +29,13 @@ export default function Product() {
   const product = mockProducts.find(p => p.slug === slug);
   const { addItem } = useCartStore();
   
+  const [searchParams] = useSearchParams();
+  const from = searchParams.get('from');
+  const farmId = searchParams.get('farmId');
+  const originFilter = searchParams.get('originFilter') || 'Todos';
+
+  const originFarm = farmId ? mockOriginFarms.find(f => f.id === farmId) : undefined;
+  
   const [selectedFormat, setSelectedFormat] = useState(product?.formats[0] || '');
   const [quantity, setQuantity] = useState(1);
 
@@ -51,12 +58,33 @@ export default function Product() {
 
   return (
     <div className="w-full bg-[#0a0a0a] pt-32">
-      <div className="max-w-7xl mx-auto px-6 mb-8 text-sm text-[#a3a3a3] flex items-center gap-2">
-        <Link to="/" className="hover:text-white">Home</Link>
-        <ChevronRight size={14} className="text-[#c9a263]" />
-        <Link to="/cafes" className="hover:text-white">Cafés</Link>
-        <ChevronRight size={14} className="text-[#c9a263]" />
-        <span className="text-white">{product.name}</span>
+      <div className="max-w-7xl mx-auto px-6 mb-8">
+        {from === 'origem' && farmId && (
+          <Link 
+            to={`/origem?farmId=${farmId}&originFilter=${originFilter}&focusMap=1#mapa-origem`} 
+            className="inline-flex items-center gap-2 text-[#a3a3a3] hover:text-white font-medium text-sm transition-colors mb-6 premium-cta-ghost border-transparent px-0 hover:bg-transparent"
+          >
+            <ArrowLeft size={16} /> Voltar ao mapa da origem
+          </Link>
+        )}
+        
+        <div className="text-sm text-[#a3a3a3] flex items-center gap-2">
+          {from === 'origem' ? (
+             <>
+               <Link to="/origem" className="hover:text-white">Origem</Link>
+               <ChevronRight size={14} className="text-[#c9a263]" />
+               <span className="hover:text-white">{originFarm?.farmName || product.farm || 'Cerrado Mineiro'}</span>
+             </>
+          ) : (
+             <>
+               <Link to="/" className="hover:text-white">Home</Link>
+               <ChevronRight size={14} className="text-[#c9a263]" />
+               <Link to="/cafes" className="hover:text-white">Cafés</Link>
+             </>
+          )}
+          <ChevronRight size={14} className="text-[#c9a263]" />
+          <span className="text-white">{product.name}</span>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 pb-24">
@@ -101,74 +129,83 @@ export default function Product() {
              <span className="block mt-2 font-medium text-[#c9a263]">Notas Sensoriais: {product.sensoryNotes.join(', ')}.</span>
           </p>
 
-          <div className="flex items-center gap-4 mb-8">
-            <span className="text-4xl font-medium tracking-tight text-white">R$ {product.price.toFixed(2)}</span>
-            {product.compareAtPrice && (
-              <span className="text-xl text-[#a3a3a3]/50 line-through">R$ {product.compareAtPrice.toFixed(2)}</span>
-            )}
-          </div>
-
           <div className="bg-[#111111] p-8 rounded-3xl border border-[#c9a263]/20 mb-10 shadow-[0_10px_30px_rgba(201,162,99,0.05)] relative overflow-hidden">
              {/* decorative */}
              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#c9a263]/10 to-transparent rounded-bl-full pointer-events-none"/>
              
-            <div className="mb-6 relative z-10">
-              <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#a3a3a3]">Formato / Moagem</h3>
+            <div className="mb-8 relative z-10">
+              <div className="flex items-end justify-between border-b border-[#a3a3a3]/10 pb-6 mb-6">
+                 <div>
+                    <div className="text-[10px] uppercase tracking-widest text-[#a3a3a3] font-bold mb-1">Preço</div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-4xl font-medium tracking-tight text-white">R$ {product.price.toFixed(2).replace('.', ',')}</span>
+                      {product.compareAtPrice && (
+                        <span className="text-xl text-[#a3a3a3]/50 line-through">R$ {product.compareAtPrice.toFixed(2).replace('.', ',')}</span>
+                      )}
+                    </div>
+                 </div>
+                 <div className="text-right">
+                    <div className="text-[10px] uppercase tracking-widest text-[#a3a3a3] font-bold mb-1">Peso</div>
+                    <span className="text-lg text-white font-medium">250g</span>
+                 </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                {product.formats.map(format => (
-                  <button
-                    key={format}
-                    onClick={() => setSelectedFormat(format)}
-                    className={`px-5 py-3 rounded-full text-sm font-bold transition-all border shadow-sm ${
-                      selectedFormat === format 
-                        ? 'bg-[#c9a263] text-[#0a0a0a] border-[#c9a263] shadow-[0_4px_10px_rgba(201,162,99,0.3)]' 
-                        : 'bg-[#1a1a1a] border-[#a3a3a3]/10 text-white hover:border-[#c9a263]/50'
-                    }`}
-                  >
-                    {format}
-                  </button>
-                ))}
+              
+              <div className="mb-6">
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#a3a3a3] mb-3">1. Escolha o Formato</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {product.formats.map(format => (
+                    <button
+                      key={format}
+                      onClick={() => setSelectedFormat(format)}
+                      className={`px-5 py-4 rounded-xl text-sm font-bold transition-all border shadow-sm ${
+                        selectedFormat === format 
+                          ? 'bg-[#c9a263] text-[#0a0a0a] border-[#c9a263] shadow-[0_4px_10px_rgba(201,162,99,0.3)]' 
+                          : 'bg-[#1a1a1a] border-[#a3a3a3]/20 text-white hover:border-[#c9a263]/50'
+                      }`}
+                    >
+                      {format}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="relative z-10">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#a3a3a3] mb-3">Quantidade</h3>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex items-center border border-[#a3a3a3]/10 rounded-full bg-[#1a1a1a] px-4 py-2 w-full sm:w-32 shadow-sm shrink-0 h-[56px]">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-[#a3a3a3] hover:text-[#c9a263] px-4 font-bold text-lg">-</button>
-                  <span className="flex-1 text-center font-bold text-white">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="text-[#a3a3a3] hover:text-[#c9a263] px-4 font-bold text-lg">+</button>
-                </div>
-                <div className="flex-1 flex gap-2 w-full">
-                  <button 
-                    onClick={handleAddToCart}
-                    className="flex-1 bg-transparent text-white border border-[#c9a263]/30 h-[56px] rounded-full font-bold flex items-center justify-center gap-2 hover:bg-[#1a1a1a] hover:border-[#c9a263] transition-colors shadow-sm"
-                  >
-                    <ShoppingBag size={18} /> À sacola
-                  </button>
-                  <button 
-                    onClick={() => {
-                        handleAddToCart();
-                        navigate('/checkout');
-                    }}
-                    className="flex-1 bg-[#c9a263] text-[#0a0a0a] h-[56px] rounded-full font-bold flex items-center justify-center gap-2 hover:bg-white transition-colors shadow-[0_5px_15px_rgba(201,162,99,0.3)]"
-                  >
-                    Comprar agora
-                  </button>
-                </div>
+            <div className="relative z-10 space-y-4">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#a3a3a3] mb-1">2. Quantidade</h3>
+              
+              <div className="flex items-center border border-[#a3a3a3]/20 rounded-full bg-[#1a1a1a] px-4 py-2 w-32 shadow-sm h-[56px] mb-6">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-[#a3a3a3] hover:text-[#c9a263] px-4 font-bold text-xl">-</button>
+                <span className="flex-1 text-center font-bold text-white text-lg">{quantity}</span>
+                <button onClick={() => setQuantity(quantity + 1)} className="text-[#a3a3a3] hover:text-[#c9a263] px-4 font-bold text-xl">+</button>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={handleAddToCart}
+                  className="w-full bg-[#c9a263] text-[#0a0a0a] h-[64px] rounded-full font-bold text-lg flex items-center justify-center gap-2 hover:bg-white transition-colors shadow-[0_5px_15px_rgba(201,162,99,0.3)]"
+                >
+                  <ShoppingBag size={20} /> Adicionar à sacola
+                </button>
+                <button 
+                  onClick={() => {
+                      handleAddToCart();
+                      navigate('/checkout');
+                  }}
+                  className="w-full bg-transparent text-white border-2 border-[#1a1a1a] hover:border-[#c9a263]/50 h-[64px] rounded-full font-bold flex items-center justify-center gap-2 hover:bg-[#1a1a1a] transition-colors"
+                >
+                  Comprar agora
+                </button>
               </div>
             </div>
             
-            <div className="mt-4 flex items-center gap-2 text-[10px] text-[#a3a3a3] uppercase tracking-widest font-bold">
-               <Sprout size={14} className="text-[#c9a263]" /> Prazo estimado: Torra em até 48h úteis + Envio
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-[#a3a3a3]/10 relative z-10">
-               <button onClick={() => navigate('/assinatura')} className="w-full bg-[#1a1a1a] text-[#c9a263] h-[56px] rounded-full font-bold flex items-center justify-center border border-[#c9a263]/30 hover:border-[#c9a263] hover:bg-[#c9a263] hover:text-[#0a0a0a] transition-all shadow-sm">
-                  <Star size={16} className="mr-2" /> Adicionar ao Clube (Assinatura Recorrente)
-               </button>
+            <div className="mt-8 flex flex-col gap-2 border-t border-[#a3a3a3]/10 pt-6">
+               <div className="flex items-center justify-center gap-2 text-[10px] text-[#a3a3a3] uppercase tracking-widest font-bold">
+                  <CheckCircle2 size={12} className="text-[#c9a263]" /> Torra sob demanda
+                  <span className="mx-1">·</span> 
+                  <CheckCircle2 size={12} className="text-[#c9a263]" /> Origem rastreada
+                  <span className="mx-1">·</span> 
+                  <CheckCircle2 size={12} className="text-[#c9a263]" /> Envio fresco
+               </div>
             </div>
           </div>
 

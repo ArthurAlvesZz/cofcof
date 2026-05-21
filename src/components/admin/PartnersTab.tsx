@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { AdminPageHeader } from './AdminPageHeader';
-import { MapPin, Search, Edit, Trash2, ExternalLink, Plus, CheckCircle2, XCircle, Store } from 'lucide-react';
+import { MapPin, Search, Edit, Trash2, ExternalLink, Plus, CheckCircle2, XCircle, Store, Eye, Check, AlertCircle } from 'lucide-react';
 import { AdminPopup } from './ui/AdminPopup';
+import { AdminDrawer } from './AdminDrawer';
+import { AdminPublishChecklist } from './ui/AdminPublishChecklist';
+import { AdminPublicPreview } from './ui/AdminPublicPreview';
 import toast from 'react-hot-toast';
 import { Partner } from '../../types';
 import { mockPartners } from '../../data/seed';
@@ -24,54 +27,58 @@ export function PartnersTab() {
       setEditingPartner(p);
     } else {
       setEditingPartner({
-        publicName: '', category: 'Cafeteria', city: '', state: 'SP', neighborhood: '', address: '', active: true, lat: 0, lng: 0, status: 'published', isPendingValidation: false
+        publicName: '', category: 'Cafeteria', city: '', state: 'SP', neighborhood: '', address: '', active: false, lat: 0, lng: 0, status: 'inactive', isPendingValidation: true
       });
     }
     setIsFormOpen(true);
   };
 
-  const handleSave = () => {
+  const getChecklist = (partner: Partial<Partner> | null) => {
+    if (!partner) return [];
+    return [
+      { label: 'Nome Público preenchido', status: !!partner.publicName || !!partner.name, critical: true },
+      { label: 'Categoria definida', status: !!partner.category, critical: true },
+      { label: 'Endereço completo', status: !!partner.address, critical: true },
+      { label: 'Coordenadas (Lat/Lng)', status: !!partner.lat && !!partner.lng, critical: true },
+      { label: 'Localização confirmada', status: !!partner.coordinatesConfirmed, critical: true },
+      { label: 'Descrição curta', status: !!partner.shortDescription, critical: true },
+      { label: 'Horário de funcionamento', status: !!partner.openingHours, critical: false },
+    ];
+  };
+
+  const currentChecklist = getChecklist(editingPartner);
+  const canPublish = currentChecklist.filter(i => i.critical && !i.status).length === 0;
+
+  const handleSave = (publish = false) => {
     if (!editingPartner?.publicName && !editingPartner?.name) {
       toast.error('Nome é obrigatório');
       return;
     }
 
-    if (editingPartner.active) {
-      if (!editingPartner.category) {
-        toast.error('Categoria é obrigatória para publicar');
+    if (publish) {
+      if (!canPublish) {
+        toast.error('Preencha os itens obrigatórios antes de publicar');
         return;
       }
-      if (!editingPartner.address) {
-        toast.error('Endereço completo é obrigatório para publicar');
-        return;
+      editingPartner.active = true;
+      editingPartner.status = 'published';
+      editingPartner.isPendingValidation = false;
+    } else {
+      if (!editingPartner.active && (editingPartner.id || !canPublish)) {
+         // Keep it inactive if saving draft
+         editingPartner.active = false;
+         editingPartner.status = 'inactive';
       }
-      if (!editingPartner.city) {
-        toast.error('Cidade/estado é obrigatório para publicar');
-        return;
-      }
-      if (!editingPartner.lat || !editingPartner.lng) {
-        toast.error('Latitude e longitude são obrigatórias para publicar');
-        return;
-      }
-      if (!editingPartner.coordinatesConfirmed || editingPartner.locationStatus !== 'confirmed') {
-        toast.error('Coordenadas confirmadas são obrigatórias para publicar');
-        return;
-      }
-      if (!editingPartner.shortDescription) {
-        toast.error('Descrição curta é obrigatória para publicar');
-        return;
-      }
-      // Assuming a default fallback image is allowed if currently empty, but strict rule says "foto ou fallback". Let's assume coverImage should be populated or standard.
     }
 
     if (editingPartner.id) {
       setPartners(partners.map(p => p.id === editingPartner.id ? { ...p, ...editingPartner } as Partner : p));
-      toast.success('Parceiro atualizado!');
+      toast.success(publish ? 'Parceiro publicado!' : 'Rascunho salvo!');
     } else {
       const newId = Math.random().toString();
       const name = editingPartner.publicName || editingPartner.name || '';
       setPartners([{ ...editingPartner, id: newId, slug: name.toLowerCase().replace(/\s+/g, '-') } as Partner, ...partners]);
-      toast.success('Parceiro criado!');
+      toast.success(publish ? 'Parceiro publicado!' : 'Parceiro salvo como rascunho!');
     }
     setIsFormOpen(false);
   };
@@ -79,13 +86,13 @@ export function PartnersTab() {
   const toggleActive = (id: string, currentActive: boolean) => {
     const partner = partners.find(p => p.id === id);
     if (!currentActive && partner) {
-      if (!partner.category || !partner.address || !partner.city || !partner.lat || !partner.lng || !partner.coordinatesConfirmed || partner.locationStatus !== 'confirmed' || !partner.shortDescription) {
+      if (!partner.category || !partner.address || !partner.city || !partner.lat || !partner.lng || !partner.coordinatesConfirmed || !partner.shortDescription) {
         toast.error('Parceiro incompleto. Edite e confirme os dados de localização antes de ativar.');
         return;
       }
     }
-    setPartners(partners.map(p => p.id === id ? { ...p, active: !currentActive, status: !currentActive ? 'published' : 'inactive' } : p));
-    toast.success(!currentActive ? 'Parceiro reativado.' : 'Parceiro desativado.');
+    setPartners(partners.map(p => p.id === id ? { ...p, active: !currentActive, status: !currentActive ? 'published' : 'inactive', isPendingValidation: !currentActive ? false : p.isPendingValidation } : p));
+    toast.success(!currentActive ? 'Parceiro reativado e publicado.' : 'Parceiro desativado.');
   };
 
   const handleAddressChange = (newAddress: string) => {
@@ -201,166 +208,191 @@ export function PartnersTab() {
          </table>
        </div>
 
-       <AdminPopup
+       <AdminDrawer
           isOpen={isFormOpen}
           onClose={() => setIsFormOpen(false)}
-          title={
-            <div>
-              <h2 className="text-xl sm:text-2xl font-serif text-[#0a0a0a]">{editingPartner?.id ? "Editar Parceiro" : "Novo Parceiro"}</h2>
-              <p className="text-sm text-gray-500 mt-1">Atualizar perfil e presença no mapa.</p>
-            </div>
-          }
-          size="lg"
-          footer={
-            <div className="flex justify-end gap-3 w-full">
-              <button onClick={() => setIsFormOpen(false)} className="px-6 py-2 font-bold text-gray-500 hover:text-gray-700 transition-colors">Cancelar</button>
-              <button onClick={handleSave} className="bg-[#111111] text-white px-8 py-2 rounded-xl font-bold hover:bg-[#c9a263] hover:text-[#0a0a0a] transition-all shadow-md">Salvar Parceiro</button>
-            </div>
-          }
+          width="xl"
+          title={editingPartner?.id ? "Editar Parceiro" : "Novo Parceiro"}
+          subtitle="Preencha as informações para que o parceiro apareça no mapa descritivo do site."
+          statusBadge={editingPartner?.active ? <span className="px-2 py-0.5 rounded-full bg-green-100/10 text-green-500 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">Publicado</span> : <span className="px-2 py-0.5 rounded-full bg-amber-100/10 text-amber-500 text-[10px] font-bold uppercase tracking-wider border border-amber-500/20">Rascunho</span>}
+          primaryAction={{
+            label: "Publicar",
+            onClick: () => handleSave(true)
+          }}
+          secondaryAction={{
+            label: "Salvar Rascunho",
+            onClick: () => handleSave(false)
+          }}
+          tertiaryAction={{
+            label: "Cancelar",
+            onClick: () => setIsFormOpen(false)
+          }}
+          variant="light"
        >
-         <div className="space-y-6 py-2 h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+         <div className="flex flex-col lg:flex-row gap-8 pb-10 mt-6 text-[#0a0a0a]">
            
-           <div className="grid grid-cols-2 gap-4">
-             <div>
-               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Nome Público *</label>
-               <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#c9a263] focus:ring-1 focus:ring-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.publicName || editingPartner?.name || ''} onChange={e => setEditingPartner({...editingPartner, publicName: e.target.value})} />
+           <div className="flex-1 space-y-8">
+             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                <h3 className="text-sm font-bold border-b pb-3 uppercase tracking-widest text-gray-500">1. Informações Básicas</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Nome Público *</label>
+                    <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] focus:ring-1 focus:ring-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.publicName || editingPartner?.name || ''} onChange={e => setEditingPartner({...editingPartner, publicName: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Categoria *</label>
+                    <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] focus:ring-1 focus:ring-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.category || editingPartner?.type || ''} onChange={e => setEditingPartner({...editingPartner, category: e.target.value})}>
+                      <option value="Cafeteria">Cafeteria</option>
+                      <option value="Empório">Empório</option>
+                      <option value="Restaurante">Restaurante</option>
+                      <option value="Hotel">Hotel</option>
+                      <option value="Padaria">Padaria</option>
+                      <option value="Posto">Posto</option>
+                      <option value="Conveniência">Conveniência</option>
+                      <option value="Revenda">Revenda</option>
+                    </select>
+                  </div>
+                  <div>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Sub Categoria / Tipo</label>
+                      <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] focus:ring-1 focus:ring-[#b06a32] outline-none transition-colors text-black placeholder:text-gray-400" placeholder="Ex: Cafeteria e Torrefação" value={editingPartner?.type || ''} onChange={e => setEditingPartner({...editingPartner, type: e.target.value})} />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Resumo Curto *</label>
+                    <textarea rows={2} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] focus:ring-1 focus:ring-[#b06a32] outline-none transition-colors text-black resize-none" value={editingPartner?.shortDescription || ''} onChange={e => setEditingPartner({...editingPartner, shortDescription: e.target.value})} maxLength={120} />
+                  </div>
+                  
+                  <div className="col-span-2">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Descrição Longa</label>
+                    <textarea rows={4} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] focus:ring-1 focus:ring-[#b06a32] outline-none transition-colors text-black resize-none" value={editingPartner?.longDescription || ''} onChange={e => setEditingPartner({...editingPartner, longDescription: e.target.value})} />
+                  </div>
+                </div>
              </div>
-             <div>
-               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Categoria *</label>
-               <select className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#c9a263] focus:ring-1 focus:ring-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.category || editingPartner?.type || ''} onChange={e => setEditingPartner({...editingPartner, category: e.target.value})}>
-                 <option value="Cafeteria">Cafeteria</option>
-                 <option value="Empório">Empório</option>
-                 <option value="Restaurante">Restaurante</option>
-                 <option value="Hotel">Hotel</option>
-                 <option value="Padaria">Padaria</option>
-                 <option value="Posto">Posto</option>
-                 <option value="Conveniência">Conveniência</option>
-                 <option value="Revenda">Revenda</option>
-               </select>
-             </div>
-             <div className="col-span-2">
-                 <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Sub Categoria / Tipo (Ex: Cafeteria e Torrefação)</label>
-                 <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#c9a263] focus:ring-1 focus:ring-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.type || ''} onChange={e => setEditingPartner({...editingPartner, type: e.target.value})} />
-             </div>
-           </div>
 
-           <div className="grid grid-cols-2 gap-4">
-             <div className="col-span-2">
-               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Resumo Curto (Aparece no card flutuante do mapa)</label>
-               <textarea rows={2} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#c9a263] focus:ring-1 focus:ring-[#c9a263] outline-none transition-colors text-black resize-none" value={editingPartner?.shortDescription || ''} onChange={e => setEditingPartner({...editingPartner, shortDescription: e.target.value})} maxLength={120} />
-             </div>
-             
-             <div className="col-span-2">
-               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Descrição Longa (Aparece na página do parceiro)</label>
-               <textarea rows={4} className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#c9a263] focus:ring-1 focus:ring-[#c9a263] outline-none transition-colors text-black resize-none" value={editingPartner?.longDescription || ''} onChange={e => setEditingPartner({...editingPartner, longDescription: e.target.value})} />
-             </div>
-           </div>
-           
-           <div className="border-t border-gray-200 pt-6">
-              <h3 className="text-sm font-bold text-[#0a0a0a] mb-4">Localização</h3>
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="col-span-2">
-                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Endereço Completo</label>
-                   <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.address || ''} onChange={e => handleAddressChange(e.target.value)} />
-                 </div>
-                 <div>
-                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Cidade</label>
-                   <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.city || ''} onChange={e => setEditingPartner({ ...editingPartner, city: e.target.value, coordinatesConfirmed: false, locationStatus: 'suggested' })} />
-                 </div>
-                 <div>
-                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Bairro</label>
-                   <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.neighborhood || ''} onChange={e => setEditingPartner({ ...editingPartner, neighborhood: e.target.value, coordinatesConfirmed: false, locationStatus: 'suggested' })} />
-                 </div>
-                 <div>
-                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Latitude</label>
-                   <input type="number" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.lat || 0} onChange={e => setEditingPartner({...editingPartner, lat: parseFloat(e.target.value) || 0, coordinatesConfirmed: false, locationStatus: 'suggested'})} />
-                 </div>
-                 <div>
-                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Longitude</label>
-                   <input type="number" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.lng || 0} onChange={e => setEditingPartner({...editingPartner, lng: parseFloat(e.target.value) || 0, coordinatesConfirmed: false, locationStatus: 'suggested'})} />
-                 </div>
-                 <div className="col-span-2">
-                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Google Maps URL</label>
-                   <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.googleMapsUrl || ''} onChange={e => setEditingPartner({...editingPartner, googleMapsUrl: e.target.value, coordinatesConfirmed: false, locationStatus: 'suggested'})} />
-                 </div>
-                 <div className="col-span-2 bg-gray-50 p-6 rounded-xl border border-gray-200 mt-2 space-y-4">
-                   <div className="flex flex-col gap-2">
-                      <span className="font-bold text-sm text-[#0a0a0a]">Validação da Localização</span>
-                      <p className="text-xs text-gray-500">O parceiro só pode ser publicado quando a localização for validada manualmente. Confirme se o PIN aponta exatamente para a entrada no mapa antes de confirmar.</p>
-                      
-                      <div className="flex gap-2 mt-2">
-                         <a href={`https://www.google.com/maps/search/?api=1&query=${editingPartner?.lat},${editingPartner?.lng}`} target="_blank" rel="noreferrer" className="bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs px-4 py-2 flex items-center gap-1.5 rounded-lg transition-colors font-medium cursor-pointer">
-                           🗺️ Verificar Coordenada no Google
-                         </a>
-                         <button 
-                            type="button" 
-                            onClick={() => {
-                              if (editingPartner?.lat && editingPartner?.lng) {
-                                setEditingPartner({...editingPartner, coordinatesConfirmed: true, locationStatus: 'confirmed'});
-                                toast.success("Localização confirmada!");
-                              } else {
-                                toast.error("Preencha LAT e LNG primeiro");
-                              }
-                            }}
-                            className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${editingPartner?.coordinatesConfirmed ? 'bg-green-100 text-green-700 pointer-events-none' : 'bg-[#c9a263] text-black hover:bg-[#b58f55]'}`}
-                         >
-                           {editingPartner?.coordinatesConfirmed ? '✅ Localização Confirmada' : 'Confirmar Localização'}
-                         </button>
-                      </div>
+             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                <h3 className="text-sm font-bold border-b pb-3 uppercase tracking-widest text-gray-500">2. Localização</h3>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="col-span-2">
+                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Endereço Completo *</label>
+                     <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.address || ''} onChange={e => handleAddressChange(e.target.value)} />
+                   </div>
+                   <div>
+                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Cidade</label>
+                     <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.city || ''} onChange={e => setEditingPartner({ ...editingPartner, city: e.target.value, coordinatesConfirmed: false, locationStatus: 'suggested' })} />
+                   </div>
+                   <div>
+                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Bairro</label>
+                     <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.neighborhood || ''} onChange={e => setEditingPartner({ ...editingPartner, neighborhood: e.target.value, coordinatesConfirmed: false, locationStatus: 'suggested' })} />
+                   </div>
+                   <div>
+                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Latitude</label>
+                     <input type="number" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.lat || 0} onChange={e => setEditingPartner({...editingPartner, lat: parseFloat(e.target.value) || 0, coordinatesConfirmed: false, locationStatus: 'suggested'})} />
+                   </div>
+                   <div>
+                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Longitude</label>
+                     <input type="number" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.lng || 0} onChange={e => setEditingPartner({...editingPartner, lng: parseFloat(e.target.value) || 0, coordinatesConfirmed: false, locationStatus: 'suggested'})} />
                    </div>
                    
-                   {!editingPartner?.coordinatesConfirmed && (
-                     <div className="bg-yellow-100 text-yellow-800 text-xs p-3 rounded-lg border border-yellow-200">
-                       ⚠️ Status atual: Pendente de validação. Parceiro não aparecerá no mapa com essa configuração.
+                   <div className="col-span-2 bg-[#fcfaf8] p-6 rounded-xl border border-[#b06a32]/20 mt-2">
+                     <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MapPin size={18} className="text-[#b06a32]" />
+                          <span className="font-bold text-sm text-[#0a0a0a]">Validação da Localização *</span>
+                        </div>
+                        <p className="text-xs text-gray-600 mb-2">O parceiro só pode ser publicado quando a localização for validada manualmente. Confirme se o PIN aponta exatamente para a entrada no mapa.</p>
+                        
+                        <div className="flex flex-wrap gap-2">
+                           <a href={`https://www.google.com/maps/search/?api=1&query=${editingPartner?.lat},${editingPartner?.lng}`} target="_blank" rel="noreferrer" className="bg-white border border-gray-200 hover:border-gray-400 text-gray-800 text-xs px-4 py-2 flex items-center gap-1.5 rounded-lg transition-colors font-medium cursor-pointer">
+                             🗺️ Verificar no Google
+                           </a>
+                           <button 
+                              type="button" 
+                              onClick={() => {
+                                if (editingPartner?.lat && editingPartner?.lng) {
+                                  setEditingPartner({...editingPartner, coordinatesConfirmed: true, locationStatus: 'confirmed'});
+                                  toast.success("Localização confirmada!");
+                                } else {
+                                  toast.error("Preencha LAT e LNG primeiro");
+                                }
+                              }}
+                              className={`px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 ${editingPartner?.coordinatesConfirmed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 pointer-events-none' : 'bg-[#111111] text-white hover:bg-[#b06a32]'}`}
+                           >
+                             {editingPartner?.coordinatesConfirmed ? <><Check size={14} /> Confirmada</> : 'Confirmar Localização'}
+                           </button>
+                        </div>
                      </div>
-                   )}
-                 </div>
-              </div>
-           </div>
+                     
+                     {!editingPartner?.coordinatesConfirmed && (
+                       <div className="mt-4 bg-amber-50 text-amber-800 text-xs p-3 rounded-lg border border-amber-200 flex items-start gap-2">
+                         <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                         <p>Pendente de validação. Parceiro não aparecerá no mapa com essa configuração.</p>
+                       </div>
+                     )}
+                   </div>
+                </div>
+             </div>
 
-           <div className="border-t border-gray-200 pt-6">
-              <h3 className="text-sm font-bold text-[#0a0a0a] mb-4">Informações e Horários</h3>
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="col-span-2">
-                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Horário Simplificado</label>
-                   <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.openingHours || ''} onChange={e => setEditingPartner({...editingPartner, openingHours: e.target.value})} placeholder="Ex: Seg-Sex: 8h as 18h" />
-                 </div>
-                 <div>
-                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Instagram</label>
-                   <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.instagram || ''} onChange={e => setEditingPartner({...editingPartner, instagram: e.target.value})} placeholder="@nomedolocal" />
-                 </div>
-                 <div>
-                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">WhatsApp</label>
-                   <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#c9a263] outline-none transition-colors text-black" value={editingPartner?.whatsapp || ''} onChange={e => setEditingPartner({...editingPartner, whatsapp: e.target.value})} placeholder="551199999999" />
-                 </div>
-              </div>
+             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                <h3 className="text-sm font-bold border-b pb-3 uppercase tracking-widest text-gray-500">3. Informações de Contato</h3>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="col-span-2">
+                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Horário Simplificado</label>
+                     <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.openingHours || ''} onChange={e => setEditingPartner({...editingPartner, openingHours: e.target.value})} placeholder="Ex: Seg-Sex: 8h as 18h" />
+                   </div>
+                   <div>
+                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Instagram</label>
+                     <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.instagram || ''} onChange={e => setEditingPartner({...editingPartner, instagram: e.target.value})} placeholder="@nomedolocal" />
+                   </div>
+                   <div>
+                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 ml-1">WhatsApp</label>
+                     <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-[#b06a32] outline-none transition-colors text-black" value={editingPartner?.whatsapp || ''} onChange={e => setEditingPartner({...editingPartner, whatsapp: e.target.value})} placeholder="551199999999" />
+                   </div>
+                </div>
+             </div>
            </div>
+           
+           <div className="lg:w-[360px] shrink-0 space-y-6">
+             <AdminPublishChecklist items={currentChecklist.map(i => ({ label: i.label, complete: i.status, critical: i.critical }))} />
+             
+             <AdminPublicPreview title="Preview do Card Flutuante" description="Como este parceiro aparecerá no mapa para os clientes">
+               <div className="bg-white p-5 m-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-[#a3a3a3]/10 max-w-[280px] mx-auto text-center relative pointer-events-none mt-10">
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-[#0a0a0a] rounded-full border-[3px] border-white shadow-md flex items-center justify-center">
+                     <Store size={20} className="text-white" />
+                  </div>
+                  <div className="pt-6">
+                    <span className="text-[9px] font-bold tracking-widest uppercase text-[#c9a263] mb-1 block">{editingPartner?.category || 'Categoria'}</span>
+                    <h3 className="font-serif text-lg font-bold text-[#0a0a0a] leading-tight mb-2 truncate px-2">{editingPartner?.publicName || editingPartner?.name || 'Nome do Parceiro'}</h3>
+                    <p className="text-xs text-[#a3a3a3] mb-4 line-clamp-2">{editingPartner?.shortDescription || 'Adicione uma descrição curta...'}</p>
+                    <div className="w-full py-2 bg-[#fcfaf8] rounded-lg text-[10px] font-bold uppercase tracking-widest text-[#0a0a0a]">
+                       Ver Detalhes
+                    </div>
+                  </div>
+               </div>
+             </AdminPublicPreview>
 
-           <div className="border-t border-gray-200 pt-6">
-              <h3 className="text-sm font-bold text-[#0a0a0a] mb-4">Flags de Sistema</h3>
-              
-              <div className="flex flex-col gap-3 ml-2">
-                <label className="flex items-center gap-3 text-sm text-gray-700 cursor-pointer">
-                  <input type="checkbox" checked={editingPartner?.featured || false} onChange={e => setEditingPartner({...editingPartner, featured: e.target.checked})} className="w-4 h-4 accent-[#c9a263]" />
-                  <span>Destaque no Mapa (Pin Maior)</span>
-                </label>
-                <label className="flex items-center gap-3 text-sm text-gray-700 cursor-pointer">
-                  <input type="checkbox" checked={editingPartner?.isPendingValidation || false} onChange={e => setEditingPartner({...editingPartner, isPendingValidation: e.target.checked})} className="w-4 h-4 accent-[#c9a263]" />
-                  <span className="text-yellow-600">Pendente de Validação (Ocultar do mapa público temporariamente)</span>
-                </label>
-                <label className="flex items-center gap-3 text-sm text-gray-700 cursor-pointer">
-                  <input type="checkbox" checked={editingPartner?.isOpen24h || false} onChange={e => setEditingPartner({...editingPartner, isOpen24h: e.target.checked})} className="w-4 h-4 accent-[#c9a263]" />
-                  <span className="text-green-600">Aberto 24 horas</span>
-                </label>
-                <label className="flex items-center gap-3 text-sm text-gray-700 cursor-pointer">
-                  <input type="checkbox" checked={editingPartner?.isRoutePartner || false} onChange={e => setEditingPartner({...editingPartner, isRoutePartner: e.target.checked})} className="w-4 h-4 accent-[#c9a263]" />
-                  <span>Faz parte da "Rota CofCof"</span>
-                </label>
-              </div>
+             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mt-6">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">Flags de Sistema</h3>
+                
+                <div className="flex flex-col gap-4">
+                  <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" checked={editingPartner?.featured || false} onChange={e => setEditingPartner({...editingPartner, featured: e.target.checked})} className="w-5 h-5 mt-0.5 accent-[#b06a32]" />
+                    <div className="flex flex-col">
+                      <span className="font-bold text-[#0a0a0a]">Destaque no Mapa</span>
+                      <span className="text-[10px] text-gray-500">Exibir com Pin Maior e animação.</span>
+                    </div>
+                  </label>
+                  <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
+                    <input type="checkbox" checked={editingPartner?.isOpen24h || false} onChange={e => setEditingPartner({...editingPartner, isOpen24h: e.target.checked})} className="w-5 h-5 mt-0.5 accent-[#b06a32]" />
+                    <div className="flex flex-col">
+                      <span className="font-bold text-[#0a0a0a]">Aberto 24 horas</span>
+                      <span className="text-[10px] text-gray-500">Adiciona tag especial de disponibilidade.</span>
+                    </div>
+                  </label>
+                </div>
+             </div>
            </div>
 
          </div>
-       </AdminPopup>
+       </AdminDrawer>
     </div>
   );
 }

@@ -12,7 +12,7 @@ import {
   Save,
   PenTool
 } from 'lucide-react';
-import { AdminPopup } from './ui/AdminPopup';
+import { AdminDrawer } from './AdminDrawer';
 import { AdminFormSection } from './ui/AdminFormSection';
 import toast from 'react-hot-toast';
 
@@ -78,10 +78,10 @@ export function CustomerFormDrawer({ customer, isOpen, onClose, onSave }: Custom
   };
 
   return (
-    <AdminPopup
+    <AdminDrawer
       isOpen={isOpen}
       onClose={onClose}
-      size="premium"
+      width="lg"
       title={customer ? "Editar Cliente" : "Novo Cliente"}
       subtitle="Cadastre informações essenciais para o acompanhamento comercial."
       footer={
@@ -273,6 +273,6 @@ export function CustomerFormDrawer({ customer, isOpen, onClose, onSave }: Custom
            </div>
         </div>
       </div>
-    </AdminPopup>
+    </AdminDrawer>
   );
 }

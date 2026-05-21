@@ -4,6 +4,7 @@ import { couponService } from '../services/couponService';
 import { Coupon } from '../types/admin';
 import { ShieldCheck, Lock, MapPin, Truck, ChevronRight, X, AlertCircle, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { BrandLogo } from '../components/brand/BrandLogo';
 
 type CepAddress = {
   street: string;
@@ -288,9 +289,7 @@ export default function Checkout() {
     return (
       <div className="bg-[#0a0a0a] min-h-screen flex flex-col">
         <header className="bg-[#111111] border-b border-[#a3a3a3]/10 py-6 px-4 md:px-8 flex items-center justify-between sticky top-0 z-50">
-          <Link to="/" className="text-2xl font-serif text-white tracking-widest uppercase hover:text-[#c9a263] transition-colors">
-            CofCof
-          </Link>
+          <BrandLogo size="nav" asLink={true} to="/" />
           <div className="flex items-center gap-2 text-[#a3a3a3] text-xs font-bold tracking-widest uppercase">
             <Lock size={14} className="text-[#c9a263]"/> Checkout Seguro
           </div>
@@ -315,9 +314,7 @@ export default function Checkout() {
     <div className="bg-[#0a0a0a] min-h-screen">
       {/* Minimal Header */}
       <header className="bg-[#111111] border-b border-[#a3a3a3]/10 py-6 px-4 md:px-8 flex items-center justify-between sticky top-0 z-50">
-        <Link to="/" className="text-2xl font-serif text-white tracking-widest uppercase hover:text-[#c9a263] transition-colors">
-          CofCof
-        </Link>
+        <BrandLogo size="nav" asLink={true} to="/" />
         <div className="flex items-center gap-2 text-[#a3a3a3] text-xs font-bold tracking-widest uppercase">
           <Lock size={14} className="text-[#c9a263]"/> Checkout Seguro
         </div>

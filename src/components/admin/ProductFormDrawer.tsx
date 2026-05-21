@@ -26,8 +26,10 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
-import { AdminPopup } from './ui/AdminPopup';
+import { AdminDrawer } from './AdminDrawer';
 import { AdminFormSection } from './ui/AdminFormSection';
+import { AdminPublishChecklist } from './ui/AdminPublishChecklist';
+import { AdminPublicPreview } from './ui/AdminPublicPreview';
 
 interface ProductFormDrawerProps {
   product: ProductAdmin | null;
@@ -71,7 +73,6 @@ export function ProductFormDrawer({ product, isOpen, onClose, onSave }: ProductF
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [showConfirmClose, setShowConfirmClose] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   
   const contentRef = useRef<HTMLDivElement>(null);
@@ -220,73 +221,38 @@ export function ProductFormDrawer({ product, isOpen, onClose, onSave }: ProductF
     setManualValue('sensoryNotes', formData.sensoryNotes?.filter(n => n !== note));
   };
 
-  const handleClose = () => {
-    if (hasChanges) {
-      setShowConfirmClose(true);
-    } else {
-      onClose();
-    }
-  };
-
   return (
-    <AdminPopup
+    <AdminDrawer
       isOpen={isOpen}
-      onClose={handleClose}
-      size="premium"
-      title={
-        <div className="flex items-center gap-4">
-          <span>{product ? 'Editar Produto' : 'Novo Produto'}</span>
-          <div className="flex gap-2">
-            {formData.active ? (
-              <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider">Ativo</span>
-            ) : (
-              <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold uppercase tracking-wider">Inativo</span>
-            )}
-            {formData.featured && (
-              <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider">Destaque</span>
-            )}
-          </div>
-        </div>
-      }
+      onClose={onClose}
+      preventBackdropClose={hasChanges}
+      width="xl"
+      variant="light"
+      title={product ? 'Editar Produto' : 'Novo Produto'}
       subtitle="Cadastre, publique e controle como este item aparece no catálogo CofCof."
-      footer={
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-3 text-xs text-gray-400 font-medium">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="text-gray-500 hover:text-red-600 transition-colors mr-4"
-            >
-              Cancelar
-            </button>
-            <Clock size={14} />
-            <span>Última alteração: {product?.updatedAt ? new Date(product.updatedAt).toLocaleTimeString() : 'Não salvo'}</span>
-            {hasChanges && <span className="flex items-center gap-1 text-amber-600 ml-4 font-bold flex items-center gap-1"><AlertCircle size={14} /> Alterações pendentes</span>}
-          </div>
-          
-          <div className="flex gap-3">
-             <button 
-               type="button" 
-               onClick={() => handleSubmit(false)} 
-               disabled={isSaving}
-               className="px-6 py-3 text-sm font-bold text-[#1C1A17] bg-white border border-gray-200 hover:border-[#1C1A17] rounded-2xl transition-all disabled:opacity-50"
-             >
-               Salvar Rascunho
-             </button>
-             <button 
-               type="button" 
-               onClick={() => handleSubmit(true)} 
-               disabled={isSaving}
-               className="flex items-center gap-2 px-8 py-3 text-sm font-bold text-white bg-[#1C1A17] hover:bg-[#B06A32] shadow-lg shadow-[#1C1A17]/10 rounded-2xl transition-all disabled:opacity-50 active:scale-95"
-             >
-               {isSaving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PenTool size={18} />}
-               {product ? 'Salvar e Publicar' : 'Publicar Produto'}
-             </button>
-           </div>
-        </div>
+      isDirty={hasChanges}
+      isBusy={isSaving}
+      statusBadge={
+        formData.active ? (
+          <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider">Ativo</span>
+        ) : (
+          <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold uppercase tracking-wider">Inativo</span>
+        )
       }
+      primaryAction={{
+        label: product ? 'Salvar e Publicar' : 'Publicar Produto',
+        onClick: () => handleSubmit(true)
+      }}
+      secondaryAction={{
+        label: 'Salvar Rascunho',
+        onClick: () => handleSubmit(false)
+      }}
+      tertiaryAction={{
+        label: 'Cancelar',
+        onClick: onClose
+      }}
     >
-      <div className="flex gap-8 relative pb-10">
+      <div className="flex flex-col lg:flex-row gap-8 relative pb-10">
         {/* Main Column */}
         <div className="flex-1 min-w-0" ref={contentRef}>
           {/* Top Controls */}
@@ -742,43 +708,9 @@ export function ProductFormDrawer({ product, isOpen, onClose, onSave }: ProductF
           </div>
 
           {/* Checklist Card */}
-          <div className="bg-white rounded-3xl border border-[#2A160E]/5 p-6 shadow-sm">
-             <div className="flex items-center justify-between mb-6">
-                <h4 className="text-xs font-bold text-[#1C1A17] uppercase tracking-[0.15em]">Checklist de Saúde</h4>
-                <ShieldCheck size={18} className="text-[#1C1A17]/40" />
-             </div>
-             
-             <div className="space-y-4">
-               {getChecklist().map((item, idx) => (
-                 <div key={idx} className="flex items-center gap-3 group">
-                   <div className={`p-1 rounded-lg transition-colors ${item.status ? 'bg-green-50 text-green-500' : 'bg-gray-50 text-gray-300'}`}>
-                     {item.status ? <CheckCircle2 size={16} /> : item.critical ? <AlertCircle size={16} className="text-amber-300" /> : <div className="w-4 h-4" />}
-                   </div>
-                   <span className={`text-xs font-medium transition-colors ${item.status ? 'text-gray-900 font-bold' : 'text-gray-400'}`}>
-                     {item.label}
-                   </span>
-                 </div>
-               ))}
-             </div>
-             
-             <div className="mt-8 pt-6 border-t border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saúde do Produto</span>
-                   <span className="text-xs font-bold text-[#C89B5A]">{Math.round((getChecklist().filter(i => i.status).length / getChecklist().length) * 100)}%</span>
-                </div>
-                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                   <div 
-                     className="h-full bg-[#C89B5A] transition-all duration-500" 
-                     style={{ width: `${(getChecklist().filter(i => i.status).length / getChecklist().length) * 100}%` }}
-                   />
-                </div>
-                {!getChecklist().filter(i => i.critical && !i.status).length && (
-                  <p className="mt-3 text-[10px] text-green-600 font-bold flex items-center gap-1">
-                    <CheckCircle2 size={12} /> Critérios mínimos atendidos.
-                  </p>
-                )}
-             </div>
-          </div>
+          <AdminPublishChecklist 
+            items={getChecklist().map(i => ({ label: i.label, complete: i.status, critical: i.critical }))} 
+          />
 
           <div className="p-6 bg-[#2A160E] rounded-3xl text-white shadow-xl">
              <h4 className="text-xs font-bold uppercase tracking-widest mb-4 opacity-100">Dicas Pró</h4>
@@ -795,47 +727,6 @@ export function ProductFormDrawer({ product, isOpen, onClose, onSave }: ProductF
           </div>
         </div>
       </div>
-
-      {/* Confirm Close Overlay */}
-      <AnimatePresence>
-        {showConfirmClose && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-[#1C1A17]/80 backdrop-blur-sm" 
-              onClick={() => setShowConfirmClose(false)}
-            />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-sm bg-white rounded-3xl p-8 shadow-2xl text-center"
-            >
-              <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <AlertCircle size={32} />
-              </div>
-              <h4 className="text-xl font-bold text-[#1C1A17] mb-2">Descartar alterações?</h4>
-              <p className="text-gray-500 text-sm mb-8 leading-relaxed">Você possui alterações não salvas. Se sair agora, todo o progresso será perdido.</p>
-              <div className="flex flex-col gap-3">
-                <button 
-                  onClick={onClose}
-                  className="w-full py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 transition-all border-b-4 border-red-800"
-                >
-                  Sair sem salvar
-                </button>
-                <button 
-                  onClick={() => setShowConfirmClose(false)}
-                  className="w-full py-4 bg-white text-gray-500 font-bold rounded-2xl hover:bg-gray-50 transition-all"
-                >
-                  Continuar editando
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </AdminPopup>
+    </AdminDrawer>
   );
 }
